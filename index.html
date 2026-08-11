@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRACER SMAGRISA — Beranda</title>
+<link rel="icon" id="favicon">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-head"><div class="container">
+  <div class="brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small data-cfg="SEKOLAH"></small></div></div>
+  <nav class="nav-links"><a href="#tentang">Tentang</a><a href="#manfaat">Manfaat</a><a href="#panduan">Panduan</a></nav>
+  <a class="btn btn-ghost btn-sm" href="admin.html"><i data-icon="lock"></i> Admin</a>
+  <a class="btn btn-primary btn-sm" href="login.html"><i data-icon="send"></i> Isi Tracer</a>
+</div></header>
+
+<section class="hero"><div class="container hero-grid">
+  <div>
+    <span class="chip"><i data-icon="trend"></i> Tracer Study Tahun <span id="tahunHero"></span></span>
+    <h1>Jejak Langkah Alumni, <span class="grad">Bangun Data Sekolah.</span></h1>
+    <p class="lead">Sistem tracer study lulusan <span data-cfg="SEKOLAH"></span>. Verifikasi dengan NISN & tanggal lahir, isi status terkini, dan bantu sekolah membangun data lulusan dari waktu ke waktu.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary btn-lg" href="login.html"><i data-icon="send"></i> ISI TRACER STUDY</a>
+      <a class="btn btn-outline btn-lg" href="#panduan">Lihat Panduan</a>
+    </div>
+  </div>
+  <div class="hero-card card">
+    <span class="float">Statistik Publik <span id="tahunCard"></span></span>
+    <h3><i data-icon="pie"></i> Partisipasi Alumni</h3>
+    <div id="pubStats" style="margin-top:12px"><div class="empty">Memuat statistik…</div></div>
+  </div>
+</div></section>
+
+<section class="block" id="tentang"><div class="container two-col">
+  <div>
+    <span class="chip">Tentang</span>
+    <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:14px 0 12px">Apa itu Tracer Study?</h2>
+    <p style="color:var(--s6);margin-bottom:12px">Tracer study adalah penelusuran jejak lulusan untuk mengetahui status alumni: bekerja, melanjutkan kuliah, keduanya, atau masih mencari aktivitas.</p>
+    <p style="color:var(--s6)">TRACER SMAGRISA dirancang <b>longitudinal</b>: satu alumni dapat mengisi survei pada tahun survei yang berbeda.</p>
+  </div>
+  <div class="card pad">
+    <h3><i data-icon="checkc"></i> Tujuan Tracer Study</h3>
+    <ul class="check-list" style="margin-top:14px">
+      <li><i data-icon="check"></i> Memetakan status lulusan.</li>
+      <li><i data-icon="check"></i> Mengumpulkan data pekerjaan, bidang usaha, dan penghasilan.</li>
+      <li><i data-icon="check"></i> Menghimpun data perguruan tinggi & prodi tujuan.</li>
+      <li><i data-icon="check"></i> Menyediakan statistik dan laporan bagi sekolah.</li>
+      <li><i data-icon="check"></i> Fondasi tracer lintas tahun (longitudinal).</li>
+    </ul>
+  </div>
+</div></section>
+
+<section class="block" id="manfaat" style="background:#fff;border-block:1px solid var(--line)"><div class="container">
+  <div class="sec-head"><span class="kicker">Manfaat</span><h2>Untuk Siapa Data Ini?</h2></div>
+  <div class="benefit-grid">
+    <div class="benefit card"><h4>Sekolah</h4><p>Evaluasi kurikulum dan pemetaan serapan lulusan.</p></div>
+    <div class="benefit card"><h4>Akreditasi</h4><p>Data ketercapaian lulusan untuk instrumen akreditasi.</p></div>
+    <div class="benefit card"><h4>Alumni</h4><p>Tetap terhubung dengan sekolah dan jejaring alumni.</p></div>
+    <div class="benefit card"><h4>Adik Kelas</h4><p>Referensi pilihan kuliah/kerja setelah lulus.</p></div>
+  </div>
+</div></section>
+
+<section class="block" id="panduan"><div class="container">
+  <div class="sec-head"><span class="kicker">Panduan Alumni</span><h2>4 Langkah Mudah</h2><p>Tanpa perlu membuat akun — cukup NISN dan tanggal lahir.</p></div>
+  <div class="steps-row">
+    <div class="step-item card"><div class="num">1</div><h4>Siapkan Data</h4><p>Siapkan NISN (10 digit) dan tanggal lahir.</p></div>
+    <div class="step-item card"><div class="num">2</div><h4>Verifikasi</h4><p>Masukkan NISN, tanggal lahir, dan CAPTCHA.</p></div>
+    <div class="step-item card"><div class="num">3</div><h4>Isi Tracer</h4><p>Isi nilai, status, dan form pekerjaan/kuliah.</p></div>
+    <div class="step-item card"><div class="num">4</div><h4>Selesai</h4><p>Data tercatat aman.</p></div>
+  </div>
+</div></section>
+
+<section class="block"><div class="container">
+  <div class="cta-band">
+    <div><h3>Sudah lulus? Kabarkan kabarmu! 🎓</h3><p>Isi tracer study <span id="tahunCta"></span>.</p></div>
+    <a class="btn btn-lg" style="background:#fff;color:var(--b800)" href="login.html"><i data-icon="send"></i> ISI TRACER STUDY</a>
+  </div>
+</div></section>
+
+<footer class="site-foot"><div class="container foot">
+  <div class="brand" style="margin:0"><img data-logo src="" style="width:38px;height:38px;border-radius:50%"><div><b style="font-size:13px" data-cfg="NAMA_APLIKASI"></b><small data-cfg="ALAMAT"></small></div></div>
+  <span>© <span id="yearNow"></span> <span data-cfg="SEKOLAH"></span></span>
+</div></footer>
+
+<div id="toasts" class="toast-wrap"></div>
+<div id="loading" class="loading-overlay" style="display:none"><div class="loading-card"><div class="spinner"></div><div>Memproses…</div></div></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script>
+<script src="js/mock-backend.js"></script>
+<script src="js/api.js"></script>
+<script>
+document.getElementById('tahunHero').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('tahunCard').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('tahunCta').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('yearNow').textContent = new Date().getFullYear();
+
+API.call('getDashboardStats', { filter: { tahunTracer: CONFIG.TAHUN_TRACER_AKTIF } }).then(function (r) {
+  var el = document.getElementById('pubStats');
+  if (!r || !r.ok || !r.data) { el.innerHTML = '<div class="empty">Statistik belum tersedia.</div>'; return; }
+  var d = r.data;
+  el.innerHTML =
+    '<div class="rr-big"><b>' + d.cards.responseRate + '%</b><span style="color:var(--s5);font-weight:700;font-size:13px">response rate</span></div>' +
+    '<div class="pbar"><span style="width:' + d.cards.responseRate + '%"></span></div>' +
+    '<div class="mini-grid">' +
+      '<div class="mini"><b>' + d.cards.totalAlumni + '</b><span>Total Alumni</span></div>' +
+      '<div class="mini"><b>' + d.cards.sudah + '</b><span>Sudah Mengisi</span></div>' +
+      '<div class="mini"><b>' + (d.statusDist['Bekerja'] || 0) + '</b><span>Bekerja</span></div>' +
+      '<div class="mini"><b>' + (d.statusDist['Kuliah'] || 0) + '</b><span>Kuliah</span></div>' +
+    '</div>';
+});
+</script>
+</body>
+</html>

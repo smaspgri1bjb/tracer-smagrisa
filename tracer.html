@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form Tracer — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="tracer-top"><div class="container">
+  <img data-logo src="" alt="">
+  <div><b data-cfg="NAMA_APLIKASI"></b><small>Form Tracer Tahun <span id="tahunForm"></span></small></div>
+  <div class="right">
+    <span class="chip"><i data-icon="clock"></i> Tahun Survei <span id="tahunChip"></span></span>
+    <button class="btn btn-ghost btn-sm" id="btnLogout"><i data-icon="logout"></i> Keluar</button>
+  </div>
+</div></div>
+<div class="container">
+  <div class="steps" id="stepsBar"></div>
+  <div id="stepBody"></div>
+</div>
+
+<div id="toasts" class="toast-wrap"></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script>
+<script src="js/mock-backend.js"></script>
+<script src="js/api.js"></script>
+<script>
+document.getElementById('tahunForm').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('tahunChip').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+
+var T = { step: 1, nilai: '', status: '', pkr: {}, kul: {} };
+var alm = null;
+try { alm = JSON.parse(sessionStorage.getItem('tracer_alumni') || 'null'); } catch (e) {}
+if (!alm) { window.location.href = 'login.html'; }
+
+function stepsHTML(cur) {
+  var lbs = ['Identitas', 'Nilai', 'Status', 'Konfirmasi'];
+  return lbs.map(function (l, i) {
+    var n = i + 1;
+    return '<div class="stp ' + (n < cur ? 'done' : n === cur ? 'active' : '') + '"><div class="dot">' + (n < cur ? '✓' : n) + '</div><span class="lb">' + l + '</span></div>';
+  }).join('');
+}
+
+function renderStep() {
+  document.getElementById('stepsBar').innerHTML = stepsHTML(T.step);
+  var body = document.getElementById('stepBody');
+
+  if (T.step === 1) {
+    body.innerHTML =
+      '<div class="form-card card pad">' +
+      '<h3 style="margin-bottom:16px">' + icon('users') + ' Langkah 1 — Identitas (readonly)</h3>' +
+      '<div class="info-banner">' + icon('info') + ' Data master dari sekolah, tidak dapat diubah.</div>' +
+      '<div class="ro-grid">' +
+        '<div class="field"><label>Nama Lengkap</label><input class="input ro" value="' + esc(alm.nama) + '" readonly></div>' +
+        '<div class="field"><label>NISN</label><input class="input ro" value="' + esc(alm.nisn) + '" readonly></div>' +
+        '<div class="field"><label>Jenis Kelamin</label><input class="input ro" value="' + esc(alm.jenis_kelamin) + '" readonly></div>' +
+        '<div class="field"><label>Tempat Lahir</label><input class="input ro" value="' + esc(alm.tempat_lahir) + '" readonly></div>' +
+        '<div class="field"><label>Tanggal Lahir</label><input class="input ro" value="' + fmtDate(alm.tanggal_lahir) + '" readonly></div>' +
+        '<div class="field"><label>Tahun Lulus</label><input class="input ro" value="' + alm.tahun_lulus + '" readonly></div>' +
+      '</div>' +
+      '<div class="form-nav"><button class="btn btn-ghost" disabled>' + icon('arrowl') + ' Kembali</button><button class="btn btn-primary" id="btnNext">' + icon('arrowr') + ' Lanjut</button></div></div>';
+    document.getElementById('btnNext').onclick = function () { T.step = 2; renderStep(); };
+
+  } else if (T.step === 2) {
+    body.innerHTML =
+      '<div class="form-card card pad">' +
+      '<h3 style="margin-bottom:16px">' + icon('award') + ' Langkah 2 — Nilai Rata-rata Ijazah</h3>' +
+      '<div class="field" id="fNilai" style="max-width:320px"><label>Nilai (0–100)</label><input class="input" id="tNilai" type="number" min="0" max="100" step="0.01" value="' + esc(T.nilai) + '"><div class="err-msg">Nilai harus 0–100.</div></div>' +
+      '<div class="form-nav"><button class="btn btn-ghost" id="btnBack">' + icon('arrowl') + ' Kembali</button><button class="btn btn-primary" id="btnNext">' + icon('arrowr') + ' Lanjut</button></div></div>';
+    document.getElementById('btnBack').onclick = function () { T.step = 1; renderStep(); };
+    document.getElementById('btnNext').onclick = function () {
+      var v = parseFloat(document.getElementById('tNilai').value.replace(',', '.'));
+      if (isNaN(v) || v < 0 || v > 100) { document.getElementById('fNilai').classList.add('error'); return; }
+      document.getElementById('fNilai').classList.remove('error'); T.nilai = v; T.step = 3; renderStep();
+    };
+
+  } else if (T.step === 3) {
+    body.innerHTML =
+      '<div class="form-card card pad">' +
+      '<h3 style="margin-bottom:16px">' + icon('pie') + ' Langkah 3 — Status Saat Ini</h3>' +
+      '<div class="status-cards">' +
+        CONFIG.STATUS_LIST.map(function (s) {
+          var ic = s === 'Bekerja' ? 'briefcase' : s === 'Kuliah' ? 'gradcap' : s === 'Bekerja + Kuliah' ? 'layers' : 'clock';
+          var cl = s === 'Bekerja' ? '#1d4ed8' : s === 'Kuliah' ? '#06b6d4' : s === 'Bekerja + Kuliah' ? '#8b5cf6' : '#94a3b8';
+          return '<label class="status-card ' + (T.status === s ? 'selected' : '') + '" data-st="' + esc(s) + '"><input type="radio" name="st" value="' + esc(s) + '" ' + (T.status === s ? 'checked' : '') + ' style="display:none"><div class="bub" style="background:' + cl + '22;color:' + cl + '">' + icon(ic) + '</div><div><b>' + esc(s) + '</b></div></label>';
+        }).join('') +
+      '</div>' +
+      '<div class="subform" id="sfPekerjaan"><div class="inner"><h3>' + icon('briefcase') + ' Form Pekerjaan</h3>' +
+        '<div class="ro-grid">' +
+          '<div class="field"><label>Jenis Pekerjaan</label><select class="select" id="pJenis"></select></div>' +
+          '<div class="field"><label>Nama Tempat Kerja</label><input class="input" id="pTempat"></div>' +
+          '<div class="field"><label>Bidang Usaha</label><select class="select" id="pBidang"></select></div>' +
+          '<div class="field"><label>Tingkat Penghasilan</label><select class="select" id="pPh"></select></div>' +
+          '<div class="field"><label>Tanggal Mulai</label><input class="input" type="date" id="pMulai"></div>' +
+        '</div></div></div>' +
+      '<div class="subform" id="sfKuliah"><div class="inner k"><h3>' + icon('gradcap') + ' Form Kuliah</h3>' +
+        '<div class="ro-grid">' +
+          '<div class="field"><label>Perguruan Tinggi</label><input class="input" id="kPt"></div>' +
+          '<div class="field"><label>Program Studi</label><input class="input" id="kProdi"></div>' +
+          '<div class="field"><label>Jenjang</label><select class="select" id="kJenjang"></select></div>' +
+          '<div class="field"><label>Tanggal Mulai</label><input class="input" type="date" id="kMulai"></div>' +
+          '<div class="field"><label>Status Kuliah</label><select class="select" id="kStatus"></select></div>' +
+        '</div></div></div>' +
+      '<div class="form-nav"><button class="btn btn-ghost" id="btnBack">' + icon('arrowl') + ' Kembali</button><button class="btn btn-primary" id="btnNext">' + icon('arrowr') + ' Lanjut</button></div></div>';
+
+    isiDropdown(document.getElementById('pJenis'), REFERENSI.jenisPekerjaanList, '-- Pilih --');
+    isiDropdown(document.getElementById('pBidang'), REFERENSI.bidangUsahaList, '-- Pilih --');
+    isiDropdown(document.getElementById('pPh'), REFERENSI.tingkatPenghasilanList, '-- Pilih --');
+    isiDropdown(document.getElementById('kJenjang'), REFERENSI.jenjangList, '-- Pilih --');
+    isiDropdown(document.getElementById('kStatus'), REFERENSI.statusKuliahList, '-- Pilih --');
+
+    document.querySelectorAll('input[name="st"]').forEach(function (r) {
+      r.addEventListener('change', function (e) {
+        T.status = e.target.value;
+        document.querySelectorAll('.status-card').forEach(function (l) { l.classList.toggle('selected', l.dataset.st === T.status); });
+        var needP = (T.status === 'Bekerja' || T.status === 'Bekerja + Kuliah');
+        var needK = (T.status === 'Kuliah' || T.status === 'Bekerja + Kuliah');
+        document.getElementById('sfPekerjaan').classList.toggle('open', needP);
+        document.getElementById('sfKuliah').classList.toggle('open', needK);
+      });
+    });
+    document.getElementById('btnBack').onclick = function () { T.step = 2; renderStep(); };
+    document.getElementById('btnNext').onclick = function () {
+      if (!T.status) { toast('Pilih status saat ini.', 'warn'); return; }
+      var needP = (T.status === 'Bekerja' || T.status === 'Bekerja + Kuliah');
+      var needK = (T.status === 'Kuliah' || T.status === 'Bekerja + Kuliah');
+      if (needP) {
+        T.pkr = {
+          jenis_pekerjaan: document.getElementById('pJenis').value,
+          nama_tempat_kerja: document.getElementById('pTempat').value.trim(),
+          bidang_usaha: document.getElementById('pBidang').value,
+          tingkat_penghasilan: document.getElementById('pPh').value,
+          tanggal_mulai: document.getElementById('pMulai').value
+        };
+        if (!T.pkr.jenis_pekerjaan || !T.pkr.nama_tempat_kerja || !T.pkr.bidang_usaha || !T.pkr.tingkat_penghasilan || !T.pkr.tanggal_mulai) {
+          toast('Lengkapi seluruh data pekerjaan.', 'warn'); return;
+        }
+      }
+      if (needK) {
+        T.kul = {
+          perguruan_tinggi: document.getElementById('kPt').value.trim(),
+          program_studi: document.getElementById('kProdi').value.trim(),
+          jenjang: document.getElementById('kJenjang').value,
+          tanggal_mulai: document.getElementById('kMulai').value,
+          status_kuliah: document.getElementById('kStatus').value
+        };
+        if (!T.kul.perguruan_tinggi || !T.kul.program_studi || !T.kul.jenjang || !T.kul.tanggal_mulai || !T.kul.status_kuliah) {
+          toast('Lengkapi seluruh data kuliah.', 'warn'); return;
+        }
+      }
+      T.step = 4; renderStep();
+    };
+
+  } else if (T.step === 4) {
+    var rows = [['Nama', alm.nama], ['NISN', alm.nisn], ['Tahun Lulus', alm.tahun_lulus], ['Nilai Rata-rata', T.nilai], ['Status', T.status]];
+    if (T.status === 'Bekerja' || T.status === 'Bekerja + Kuliah') {
+      rows.push(['Jenis Pekerjaan', refLabel(REFERENSI.jenisPekerjaanList, T.pkr.jenis_pekerjaan)]);
+      rows.push(['Tempat Kerja', T.pkr.nama_tempat_kerja]);
+      rows.push(['Bidang Usaha', refLabel(REFERENSI.bidangUsahaList, T.pkr.bidang_usaha)]);
+      rows.push(['Penghasilan', refLabel(REFERENSI.tingkatPenghasilanList, T.pkr.tingkat_penghasilan)]);
+      rows.push(['Mulai Bekerja', fmtDate(T.pkr.tanggal_mulai)]);
+    }
+    if (T.status === 'Kuliah' || T.status === 'Bekerja + Kuliah') {
+      rows.push(['Perguruan Tinggi', T.kul.perguruan_tinggi]);
+      rows.push(['Program Studi', T.kul.program_studi]);
+      rows.push(['Jenjang', T.kul.jenjang]);
+      rows.push(['Mulai Kuliah', fmtDate(T.kul.tanggal_mulai)]);
+      rows.push(['Status Kuliah', T.kul.status_kuliah]);
+    }
+    body.innerHTML =
+      '<div class="form-card card pad">' +
+      '<h3 style="margin-bottom:16px">' + icon('file') + ' Langkah 4 — Konfirmasi</h3>' +
+      '<div class="sum-list">' + rows.map(function (r) { return '<div class="sum-row"><b>' + esc(r[0]) + '</b><span>' + esc(r[1]) + '</span></div>'; }).join('') + '</div>' +
+      '<div class="info-banner" style="margin-top:16px">' + icon('alert') + ' Periksa kembali. Setelah dikirim, hubungi admin untuk koreksi.</div>' +
+      '<div class="form-nav"><button class="btn btn-ghost" id="btnBack">' + icon('arrowl') + ' Kembali</button><button class="btn btn-primary" id="btnSubmit">' + icon('send') + ' Kirim Jawaban</button></div></div>';
+    document.getElementById('btnBack').onclick = function () { T.step = 3; renderStep(); };
+    document.getElementById('btnSubmit').onclick = function () {
+      if (!confirm('Kirim tracer study tahun ' + CONFIG.TAHUN_TRACER_AKTIF + '?')) return;
+      var btn = document.getElementById('btnSubmit'); btn.disabled = true;
+      API.call('simpanTracer', { nilai: T.nilai, status: T.status, pekerjaan: T.pkr, kuliah: T.kul }, sessionStorage.getItem('tracer_token')).then(function (r) {
+        if (!r.ok) { toast(r.msg || 'Gagal menyimpan.', 'error'); btn.disabled = false; return; }
+        sessionStorage.setItem('tracer_last', JSON.stringify({ tracerId: r.data.tracer_id, status: T.status, tahun: CONFIG.TAHUN_TRACER_AKTIF }));
+        sessionStorage.removeItem('tracer_token'); sessionStorage.removeItem('tracer_alumni');
+        window.location.href = 'sukses.html';
+      });
+    };
+  }
+}
+
+document.getElementById('btnLogout').onclick = function () {
+  var tok = sessionStorage.getItem('tracer_token');
+  if (tok) API.call('logoutAlumni', null, tok);
+  sessionStorage.removeItem('tracer_token'); sessionStorage.removeItem('tracer_alumni');
+  window.location.href = 'index.html';
+};
+renderStep();
+</script>
+</body>
+</html>

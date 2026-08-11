@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracer Terkirim — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="sukses-wrap"><div class="card pad" style="max-width:520px;width:100%;text-align:center">
+  <div class="ok-ring"><i data-icon="check"></i></div>
+  <h2 style="font-size:22px;font-weight:800;margin-bottom:6px">Tracer Study Terkirim!</h2>
+  <p style="color:var(--s6);font-size:13.5px;margin-bottom:20px">Terima kasih. Jawaban Anda telah tercatat dan ikut membangun data lulusan <span data-cfg="SEKOLAH"></span>.</p>
+  <div id="lastBox"></div>
+  <a class="btn btn-primary" href="index.html"><i data-icon="home"></i> Kembali ke Beranda</a>
+</div></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/utils.js"></script>
+<script>
+try {
+  var last = JSON.parse(sessionStorage.getItem('tracer_last') || 'null');
+  if (last) {
+    var stBadge = last.status === 'Bekerja' ? 'badge-blue' : last.status === 'Kuliah' ? 'badge-cyan' : last.status === 'Bekerja + Kuliah' ? 'badge-violet' : 'badge-slate';
+    document.getElementById('lastBox').innerHTML =
+      '<div class="sum-list" style="text-align:left;margin-bottom:20px">' +
+      '<div class="sum-row"><b>ID Tracer</b><span>' + esc(last.tracerId) + '</span></div>' +
+      '<div class="sum-row"><b>Tahun</b><span>' + last.tahun + '</span></div>' +
+      '<div class="sum-row"><b>Status</b><span class="badge ' + stBadge + '">' + esc(last.status) + '</span></div>' +
+      '</div>';
+  }
+} catch (e) {}
+sessionStorage.removeItem('tracer_last');
+</script>
+</body>
+</html>

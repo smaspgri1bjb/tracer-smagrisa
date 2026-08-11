@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verifikasi Alumni — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-wrap"><div class="auth-card card">
+  <div class="auth-head">
+    <img data-logo src="" alt="">
+    <h2>Verifikasi Alumni</h2>
+    <p>Masukkan NISN & tanggal lahir untuk memulai tracer study</p>
+  </div>
+  <form id="frmVerifikasi" novalidate>
+    <div class="field" id="fNisn"><label>NISN</label><input class="input" id="vNisn" inputmode="numeric" maxlength="10" placeholder="10 digit NISN" autocomplete="off"><div class="err-msg">NISN harus 10 digit.</div></div>
+    <div class="field" id="fTgl"><label>Tanggal Lahir</label><input class="input" type="date" id="vTgl"><div class="err-msg">Tanggal lahir wajib diisi.</div></div>
+    <div class="field"><label>CAPTCHA</label>
+      <div class="captcha-row"><canvas id="captchaCanvas" width="150" height="52"></canvas>
+      <button type="button" class="btn btn-outline btn-sm" id="btnRefresh"><i data-icon="refresh"></i></button></div>
+    </div>
+    <div class="field" id="fCap"><input class="input" id="vCaptcha" placeholder="Ketik kode CAPTCHA" autocomplete="off"><div class="err-msg">CAPTCHA wajib diisi.</div></div>
+    <div class="errbox" id="vErr" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="vBtn" type="submit"><i data-icon="shield"></i> Verifikasi & Mulai</button>
+  </form>
+  <div class="hintbox"><b>Data uji (mock):</b> NISN <b>0051234001</b> tgl <b>2005-03-12</b> • NISN <b>0071234004</b> tgl <b>2007-12-01</b><br><a href="index.html" style="font-weight:700">← Kembali ke beranda</a></div>
+</div></div>
+
+<div id="toasts" class="toast-wrap"></div>
+
+<script src="js/config.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script>
+<script src="js/mock-backend.js"></script>
+<script src="js/api.js"></script>
+<script>
+var CAPTCHA = null;
+function drawCaptcha(code) {
+  var cv = document.getElementById('captchaCanvas');
+  var ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.fillStyle = '#f1f5f9'; ctx.fillRect(0, 0, cv.width, cv.height);
+  for (var i = 0; i < 4; i++) {
+    ctx.strokeStyle = 'rgba(37,99,235,' + (0.12 + Math.random() * 0.15) + ')';
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * cv.width, Math.random() * cv.height);
+    ctx.lineTo(Math.random() * cv.width, Math.random() * cv.height);
+    ctx.stroke();
+  }
+  var cols = ['#1e40af', '#0f172a', '#0891b2', '#7c3aed'];
+  code.split('').forEach(function (ch, i) {
+    ctx.save();
+    ctx.translate(20 + i * 26, 27);
+    ctx.rotate((Math.random() - 0.5) * 0.5);
+    ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = cols[i % cols.length];
+    ctx.fillText(ch, -8, 8);
+    ctx.restore();
+  });
+  for (var j = 0; j < 24; j++) {
+    ctx.fillStyle = 'rgba(15,23,42,' + (Math.random() * 0.25) + ')';
+    ctx.fillRect(Math.random() * cv.width, Math.random() * cv.height, 1.5, 1.5);
+  }
+}
+function refreshCaptcha() {
+  API.call('buatCaptcha').then(function (r) {
+    if (!r.ok) return;
+    CAPTCHA = r.data;
+    drawCaptcha(CAPTCHA.code);
+  });
+}
+document.getElementById('btnRefresh').addEventListener('click', refreshCaptcha);
+
+document.getElementById('frmVerifikasi').addEventListener('submit', function (e) {
+  e.preventDefault();
+  var nisn = document.getElementById('vNisn').value.replace(/\D/g, '');
+  var tgl = document.getElementById('vTgl').value;
+  var cap = document.getElementById('vCaptcha').value.trim();
+  document.getElementById('fNisn').classList.toggle('error', !/^\d{10}$/.test(nisn));
+  document.getElementById('fTgl').classList.toggle('error', !tgl);
+  document.getElementById('fCap').classList.toggle('error', !cap);
+  if (!/^\d{10}$/.test(nisn) || !tgl || !cap) return;
+
+  var btn = document.getElementById('vBtn'); btn.disabled = true;
+  API.call('verifikasiAlumni', { nisn: nisn, tanggalLahir: tgl, captchaId: CAPTCHA.id, captcha: cap }).then(function (r) {
+    if (!r.ok) {
+      var eb = document.getElementById('vErr');
+      eb.textContent = r.msg || 'Verifikasi gagal.'; eb.style.display = 'block';
+      if (r.data && r.data.captcha) { refreshCaptcha(); document.getElementById('vCaptcha').value = ''; }
+      btn.disabled = false; return;
+    }
+    sessionStorage.setItem('tracer_token', r.data.token);
+    sessionStorage.setItem('tracer_alumni', JSON.stringify(r.data.alumni));
+    window.location.href = 'tracer.html';
+  });
+});
+refreshCaptcha();
+</script>
+</body>
+</html>

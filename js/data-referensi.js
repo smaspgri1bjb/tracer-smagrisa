@@ -1,65 +1,158 @@
-// Data referensi untuk dropdown frontend. Sumber kebenaran jangka panjang: Spreadsheet.
-// Gunakan: isiDropdown(document.getElementById('sel'), REFERENSI.bidangUsahaList, '-- Pilih bidang usaha --');
-var REFERENSI = {
-  bidangUsahaList: [
-    {kode:'BU-01',label:'Pertanian, Kehutanan & Perikanan'},
-    {kode:'BU-02',label:'Pertambangan & Penggalian'},
-    {kode:'BU-03',label:'Industri Pengolahan'},
-    {kode:'BU-04',label:'Pengadaan Listrik, Gas & Air'},
-    {kode:'BU-05',label:'Konstruksi'},
-    {kode:'BU-06',label:'Perdagangan Besar & Eceran'},
-    {kode:'BU-07',label:'Transportasi & Pergudangan'},
-    {kode:'BU-08',label:'Penyediaan Akomodasi & Makan Minum'},
-    {kode:'BU-09',label:'Informasi & Komunikasi'},
-    {kode:'BU-10',label:'Jasa Keuangan & Asuransi'},
-    {kode:'BU-11',label:'Real Estat'},
-    {kode:'BU-12',label:'Jasa Perusahaan'},
-    {kode:'BU-13',label:'Administrasi Pemerintahan'},
-    {kode:'BU-14',label:'Pendidikan'},
-    {kode:'BU-15',label:'Kesehatan & Kegiatan Sosial'},
-    {kode:'BU-16',label:'Kesenian, Hiburan & Rekreasi'},
-    {kode:'BU-17',label:'Jasa Lainnya'},
-    {kode:'BU-18',label:'Badan Internasional & Ekstrateritorial'}
-  ],
-  jenisPekerjaanList: [
-    {kode:'JP-01',label:'Karyawan Swasta'},
-    {kode:'JP-02',label:'Karyawan BUMN/BUMD'},
-    {kode:'JP-03',label:'PNS/ASN'},
-    {kode:'JP-04',label:'TNI/Polri'},
-    {kode:'JP-05',label:'Guru/Dosen'},
-    {kode:'JP-06',label:'Tenaga Kesehatan'},
-    {kode:'JP-07',label:'Wiraswasta/Pengusaha'},
-    {kode:'JP-08',label:'Pekerja Lepas (Freelance)'},
-    {kode:'JP-09',label:'Buruh/Pekerja Lapangan'},
-    {kode:'JP-10',label:'Tenaga Administrasi'},
-    {kode:'JP-11',label:'Sales/Marketing'},
-    {kode:'JP-12',label:'Teknisi/Mekanik'},
-    {kode:'JP-13',label:'Programmer/IT Support'},
-    {kode:'JP-14',label:'Desainer/Kreatif'},
-    {kode:'JP-15',label:'Sopir/Kurir'},
-    {kode:'JP-16',label:'Lainnya'}
-  ],
-  tingkatPenghasilanList: [
-    {kode:'PH-1',label:'Kurang dari Rp 1.000.000'},
-    {kode:'PH-2',label:'Rp 1.000.000 – Rp 2.000.000'},
-    {kode:'PH-3',label:'Rp 2.000.000 – Rp 3.500.000'},
-    {kode:'PH-4',label:'Rp 3.500.000 – Rp 5.000.000'},
-    {kode:'PH-5',label:'Rp 5.000.000 – Rp 8.000.000'},
-    {kode:'PH-6',label:'Rp 8.000.000 – Rp 12.000.000'},
-    {kode:'PH-7',label:'Lebih dari Rp 12.000.000'}
-  ]
-};
+// ============================================================
+// DATA-REFERENSI.JS
+// Data referensi dropdown — Aplikasi Tracer Study
+// SMAS PGRI 1 Banjarbaru
+//
+// Sumber tunggal (source of truth) untuk daftar ini adalah sheet
+// "RefBidangUsaha" / "RefJenisPekerjaan" / "RefTingkatPenghasilan"
+// di Spreadsheet. File ini adalah salinan statis untuk dropdown
+// di frontend — jika admin mengubah sheet Referensi, jalankan
+// generateReferensiJS() di Apps Script untuk mendapatkan versi
+// terbaru dan tempel ulang di sini.
+//
+// Catatan pembersihan dari data asli:
+// - "Perdagangan Mobil dan Sepeda Motor 342" -> dibuang angka "342"
+//   (sisa artefak, bukan bagian nama bidang usaha)
+// - Daftar penghasilan: dipakai HANYA 7 kode resmi Dapodik.
+//   3 entri tambahan ("< Rp1.000.000", dst.) dibuang karena
+//   formatnya berbeda & rentangnya tumpang tindih dengan 7 kode
+//   resmi -> berisiko merusak keakuratan statistik nanti.
+// ============================================================
 
-function isiDropdown(selectElement, list, placeholder) {
-  if (!selectElement) return;
-  var opts = '<option value="">'+(placeholder || '-- Pilih --')+'</option>';
-  for (var i = 0; i < list.length; i++) {
-    opts += '<option value="'+esc(list[i].kode)+'">'+esc(list[i].label)+'</option>';
-  }
-  selectElement.innerHTML = opts;
-}
+// --- BIDANG USAHA (selaras KBLI / Dapodik) ---
+const bidangUsahaList = [
+  "Administrasi Pemerintahan, Pertahanan",
+  "Angkutan Air",
+  "Angkutan Darat dan Melalui Saluran Pipa",
+  "Angkutan Udara",
+  "Asuransi dan Dana Pensiun",
+  "Ind. Alat Angkutan Lainnya",
+  "Ind. Bahan Kimia",
+  "Ind. Barang Galian Bukan Logam",
+  "Ind. Barang Logam, Bukan Mesin",
+  "Ind. Farmasi",
+  "Ind. Furnitur",
+  "Ind. Kayu, dan Gabus",
+  "Ind. Kendaraan Bermotor",
+  "Ind. Kertas dan Barang dari Kertas",
+  "Ind. Komputer, Brg Elektronik dan Optik",
+  "Ind. Kulit, dan Alas Kaki",
+  "Ind. Logam Dasar",
+  "Ind. Makanan",
+  "Ind. Mesin dan Perlengkapan ytdl",
+  "Ind. Minuman",
+  "Ind. Pakaian Jadi",
+  "Ind. Peralatan Listrik",
+  "Ind. Pencetakan dan Repr. Media Rekaman",
+  "Ind. Pengolahan Lainnya",
+  "Ind. Pengolahan Tembakau",
+  "Ind. Prod Bt Bara, Kilang Minyak Bumi",
+  "Ind. Karet dan Plastik",
+  "Ind. Tekstil",
+  "Jasa Administrasi Kantor",
+  "Jasa Agen Perjalanan",
+  "Jasa Arsitektur dan Teknik Sipil",
+  "Jasa Keamanan dan Penyelidikan",
+  "Jasa Kegiatan Sosial di Dalam Panti",
+  "Jasa Kegiatan Sosial di Luar Panti",
+  "Jasa Kesehatan Hewan",
+  "Jasa Kesehatan Manusia",
+  "Jasa Ketenagakerjaan",
+  "Jasa Keuangan",
+  "Jasa Hukum dan Akuntansi",
+  "Jasa Pendidikan",
+  "Jasa Pengelolaan Sampah Lain",
+  "Jasa Penunjang Jasa Keuangan",
+  "Jasa Perorangan Lainnya",
+  "Jasa Perorangan yg Melayani Rmh Tangga",
+  "Jasa Persewaan",
+  "Jasa Pertambangan",
+  "Jasa Profesional, Ilmiah dan Teknis",
+  "Jasa Reparasi Komputer",
+  "Jasa Reparasi Mesin",
+  "Jasa Untuk Gedung dan Pertamanan",
+  "Kegiatan Hiburan, Kesenian",
+  "Kegiatan Jasa Informasi",
+  "Kegiatan Keanggotaan Organisasi",
+  "Kegiatan Konsultansi Manajemen",
+  "Kegiatan Olahraga dan Rekreasi",
+  "Kegiatan Pemrograman",
+  "Keg. Badan Internasional lain",
+  "Keg. Rmh Tangga yang Digunakan Sendiri",
+  "Kehutanan dan Penebangan Kayu",
+  "Konstruksi Bangunan Sipil",
+  "Konstruksi Gedung",
+  "Konstruksi Khusus",
+  "Penelitian Ilmu Pengetahuan",
+  "Pengadaan Air",
+  "Pengadaan Listrik, Gas, Uap",
+  "Pengelolaan Limbah",
+  "Pengelolaan Sampah dan Daur Ulang",
+  "Penerbitan",
+  "Penyediaan Akomodasi",
+  "Penyediaan Makanan dan Minuman",
+  "Penyiaran dan Pemrograman",
+  "Perdagangan Besar, Bukan Mobil",
+  "Perdagangan Eceran, Bukan Mobil",
+  "Perdagangan Mobil dan Sepeda Motor",
+  "Pergudangan dan Jasa Penunjang Angkutan",
+  "Periklanan dan Penelitian Pasar",
+  "Perikanan",
+  "Perpustakaan, Arsip, Museum",
+  "Pertanian, Peternakan, Perburuan",
+  "Pos dan Kurir",
+  "Produksi Video dan Musik",
+  "Real Estat",
+  "Telekomunikasi",
+  "Tmbg Batu Bara dan Lignit",
+  "Tmbg Bijih Logam",
+  "Tmbg dan Penggalian Lainnya",
+  "Tmbg Mnyk Bumi, Gas Alam, Panas Bumi",
+].map((label, i) => ({ kode: "BU-" + String(i + 1).padStart(2, "0"), label }));
 
-function refLabel(list, kode) {
-  for (var i = 0; i < list.length; i++) if (list[i].kode === kode) return list[i].label;
-  return kode;
+// --- JENIS PEKERJAAN / STATUS PEKERJAAN ---
+const jenisPekerjaanList = [
+  "Tidak bekerja",
+  "Nelayan",
+  "Petani",
+  "Peternak",
+  "PNS/TNI/Polri",
+  "Karyawan BUMN",
+  "Karyawan Swasta",
+  "Pedagang Kecil",
+  "Pedagang Besar",
+  "Wiraswasta",
+  "Wirausaha",
+  "Buruh",
+  "Tenaga Kerja Indonesia",
+  "Pensiunan",
+  "Tidak dapat diterapkan",
+  "Sudah Meninggal",
+  "Lainnya",
+].map((label, i) => ({ kode: "JP-" + String(i + 1).padStart(2, "0"), label }));
+
+// --- TINGKAT PENGHASILAN (7 kode resmi Dapodik) ---
+const tingkatPenghasilanList = [
+  { kode: 1, label: "Kurang dari Rp. 500,000" },
+  { kode: 2, label: "Rp. 500,000 - Rp. 999,999" },
+  { kode: 3, label: "Rp. 1,000,000 - Rp. 1,999,999" },
+  { kode: 4, label: "Rp. 2,000,000 - Rp. 4,999,999" },
+  { kode: 5, label: "Rp. 5,000,000 - Rp. 20,000,000" },
+  { kode: 6, label: "Lebih dari Rp. 20,000,000" },
+  { kode: 7, label: "Tidak Berpenghasilan" },
+];
+
+// --- Helper: isi <select> dari salah satu daftar di atas ---
+function isiDropdown(selectEl, daftar, placeholder) {
+  selectEl.innerHTML = "";
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = placeholder || "-- Pilih --";
+  selectEl.appendChild(opt0);
+  daftar.forEach((item) => {
+    const opt = document.createElement("option");
+    opt.value = item.kode;
+    opt.textContent = item.label;
+    selectEl.appendChild(opt);
+  });
 }

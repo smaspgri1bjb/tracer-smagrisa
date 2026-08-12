@@ -38,9 +38,7 @@ function applyConfig() {
   document.querySelectorAll('[data-cfg]').forEach(function (el) {
     el.textContent = CONFIG[el.getAttribute('data-cfg')] || '';
   });
-  document.querySelectorAll('img[data-logo]').forEach(function (img) {
-    img.src = CONFIG.LOGO_URL;
-  });
+  document.querySelectorAll('img[data-logo]').forEach(function (img) { img.src = CONFIG.LOGO_URL; });
 }
 document.addEventListener('DOMContentLoaded', function () {
   applyConfig();

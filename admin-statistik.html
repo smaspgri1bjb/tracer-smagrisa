@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Statistik — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
+    <nav class="sb-nav" id="navList"></nav>
+    <div class="sb-foot"><div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
+      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button></div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h2>Statistik</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
+    <main class="content">
+      <div class="toolbar">
+        <select class="select" id="fTahun" style="max-width:180px"><option value="">Semua Tahun</option></select>
+        <a class="btn btn-outline btn-sm" href="admin-dashboard.html"><i data-icon="arrowl"></i> Dashboard</a>
+      </div>
+      <div id="statBody"><div class="empty"><div class="spinner" style="margin:0 auto"></div></div></div>
+    </main>
+  </div>
+</div>
+<div id="toasts" class="toast-wrap"></div>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
+<script>
+initAdminShell('admin-statistik.html');
+var FILTER = { tahunTracer: '' };
+function tbl(title, items) {
+  if (!items || !items.length) return '<div class="card pad"><h3>' + icon('bar') + ' ' + title + '</h3><div class="empty" style="padding:20px">Belum ada data.</div></div>';
+  return '<div class="card pad"><h3>' + icon('bar') + ' ' + title + '</h3><div class="ref-list" style="max-height:260px;margin-top:12px">' +
+    items.map(function (r) {
+      return '<div class="ref-item" style="display:block"><div style="display:flex;justify-content:space-between"><span style="font-weight:700">' + esc(r.label) + '</span><span style="color:var(--s5)">' + r.count + ' • ' + r.persen + '%</span></div><div class="pbar" style="height:7px;margin-top:6px"><span style="width:' + r.persen + '%;display:block;height:100%;background:var(--b600)"></span></div></div>';
+    }).join('') + '</div></div>';
+}
+function render() {
+  document.getElementById('statBody').innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto"></div></div>';
+  Promise.all([
+    API.call('getDashboardStats', { filter: FILTER }),
+    API.call('getStatistikLongitudinal')
+  ]).then(function (res) {
+    var d = (res[0] && res[0].data) || {};
+    var longi = (res[1] && res[1].data) || [];
+    var fT = document.getElementById('fTahun');
+    if (fT.options.length <= 1 && d.perTahun) fT.innerHTML = '<option value="">Semua Tahun</option>' + d.perTahun.labels.map(function (y) { return '<option>' + y + '</option>'; }).join('');
+    function withPct(arr) { var tot = arr.reduce(function (s, x) { return s + x.count; }, 0); return arr.map(function (x) { return { label: x.label, count: x.count, persen: tot ? Math.round(x.count / tot * 1000) / 10 : 0 }; }); }
+    var statusRows = CONFIG.STATUS_LIST.map(function (s) { var c = d.statusDist[s] || 0; var tot = Object.values(d.statusDist || {}).reduce(function (a, b) { return a + b; }, 0); return { label: s, count: c, persen: tot ? Math.round(c / tot * 1000) / 10 : 0 }; });
+    document.getElementById('statBody').innerHTML =
+      '<div class="grid-2">' + tbl('Status Lulusan (Persentase)', statusRows) + tbl('Jenis Pekerjaan', withPct(d.jenisPekerjaan || [])) + '</div>' +
+      '<div class="grid-2">' + tbl('Bidang Usaha', withPct(d.bidangUsaha || [])) + tbl('Tingkat Penghasilan', withPct(d.penghasilan || [])) + '</div>' +
+      tbl('Perguruan Tinggi', withPct(d.perguruanTinggi || [])) +
+      '<div class="card pad" style="margin-top:16px"><h3>' + icon('trend') + ' Transisi Status Longitudinal</h3>' +
+        (longi.length ? '<div class="table-wrap" style="margin-top:12px"><table class="tbl"><thead><tr><th>Transisi</th><th>Jumlah</th></tr></thead><tbody>' +
+          longi.map(function (t) { return '<tr><td>' + esc(t.transition) + '</td><td><b>' + t.count + '</b></td></tr>'; }).join('') +
+          '</tbody></table></div>' : '<div class="empty" style="padding:20px">Belum ada data lintas tahun.</div>') +
+      '</div>';
+  });
+}
+document.getElementById('fTahun').onchange = function (e) { FILTER.tahunTracer = e.target.value; render(); };
+render();
+</script>
+</body>
+</html>

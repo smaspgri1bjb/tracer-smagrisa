@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laporan — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
+    <nav class="sb-nav" id="navList"></nav>
+    <div class="sb-foot"><div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
+      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button></div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h2>Laporan</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
+    <main class="content">
+      <div class="grid-2" style="grid-template-columns:320px 1fr">
+        <div class="card pad">
+          <h3 style="margin-bottom:14px"><i data-icon="printer"></i> Buat Laporan</h3>
+          <div class="field"><label>Jenis</label><select class="select" id="lapJenis">
+            <option value="ringkasan">Ringkasan</option>
+            <option value="status">Status Lulusan</option>
+            <option value="pekerjaan">Pekerjaan / Bidang / Penghasilan</option>
+            <option value="kuliah">Kuliah / PT</option>
+            <option value="longitudinal">Longitudinal</option>
+          </select></div>
+          <div class="field"><label>Tahun Tracer</label><input class="input" type="number" id="lapTahun" placeholder="Kosongkan = semua"></div>
+          <button class="btn btn-primary btn-block" id="btnGen"><i data-icon="file"></i> Buat Laporan</button>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-outline btn-sm" style="flex:1" id="btnCetak"><i data-icon="printer"></i> Cetak</button>
+            <button class="btn btn-outline btn-sm" style="flex:1" id="btnExp"><i data-icon="download"></i> CSV</button>
+          </div>
+        </div>
+        <div id="repBody"><div class="card empty"><i data-icon="printer"></i><b>Belum ada laporan.</b> Pilih jenis lalu klik Buat Laporan.</div></div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="toasts" class="toast-wrap"></div>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
+<script>
+initAdminShell('admin-laporan.html');
+var lastReport = null;
+document.getElementById('btnGen').onclick = function () {
+  var type = document.getElementById('lapJenis').value;
+  var y = document.getElementById('lapTahun').value;
+  var filter = {}; if (y) filter.tahunTracer = parseInt(y, 10);
+  API.call('generateLaporan', { type: type, filter: filter }).then(function (r) {
+    if (!r.ok) { document.getElementById('repBody').innerHTML = '<div class="card empty">Gagal memuat.</div>'; return; }
+    lastReport = { type: type, data: r.data };
+    var html = '<div class="report-sheet"><div class="rep-kop"><img src="' + CONFIG.LOGO_URL + '"><div><div style="font-size:13px;font-weight:700;color:var(--s6)">SISTEM TRACER STUDY</div><div class="t2">' + esc(CONFIG.SEKOLAH) + '</div><div style="font-size:11.5px;color:var(--s5)">' + esc(CONFIG.ALAMAT) + '</div></div></div>';
+    html += '<div class="rep-title"><b>' + esc(r.data.judul) + '</b></div><div class="rep-meta">' + esc(r.data.meta) + '</div>';
+    r.data.tabel.forEach(function (t) {
+      html += '<div class="rep-table"><h5 style="font-size:12.5px;font-weight:800;color:var(--b800);margin-bottom:6px">' + esc(t.judul) + '</h5><table><thead><tr>' + t.kolom.map(function (k) { return '<th>' + esc(k) + '</th>'; }).join('') + '</tr></thead><tbody>' + t.baris.map(function (b) { return '<tr>' + b.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+    });
+    html += '<div style="margin-top:26px;text-align:right;font-size:12.5px;color:var(--s6)">Banjarbaru, ' + fmtDate(new Date().toISOString().slice(0, 10)) + '<br>Administrator</div></div>';
+    document.getElementById('repBody').innerHTML = html;
+    toast('Laporan dibuat.');
+  });
+};
+document.getElementById('btnCetak').onclick = function () { window.print(); };
+document.getElementById('btnExp').onclick = function () {
+  if (!lastReport) return;
+  var rows = [['TRACER SMAGRISA - ' + lastReport.data.judul], ['']];
+  lastReport.data.tabel.forEach(function (t) { rows.push([t.judul]); rows.push(t.kolom); t.baris.forEach(function (b) { rows.push(b); }); rows.push(['']); });
+  var csv = rows.map(function (r) { return r.map(function (c) { c = c == null ? '' : String(c); return /[",;\n]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(','); }).join('\n');
+  var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'laporan_' + lastReport.type + '.csv'; a.click();
+  toast('CSV diunduh.');
+};
+</script>
+</body>
+</html>

@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Login Admin — TRACER SMAGRISA</title>
-<link rel="icon" id="favicon">
-<link rel="stylesheet" href="css/style.css">
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="auth-wrap"><div class="auth-card card">
@@ -16,27 +14,18 @@
     <div class="errbox" id="aErr" style="display:none"></div>
     <button class="btn btn-primary btn-block" type="submit"><i data-icon="lock"></i> Masuk</button>
   </form>
-  <div class="hintbox"><b>Demo:</b> admin / smagrisa2026<br><a href="index.html" style="font-weight:700">← Kembali ke beranda</a></div>
+  <div class="hintbox"><b>Demo (mock):</b> admin / smagrisa2026<br><a href="index.html" style="font-weight:700">← Kembali ke beranda</a></div>
 </div></div>
-
 <div id="toasts" class="toast-wrap"></div>
-
-<script src="js/config.js"></script>
-<script src="js/icons.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/data-referensi.js"></script>
-<script src="js/mock-backend.js"></script>
-<script src="js/api.js"></script>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script>
 <script>
 if (sessionStorage.getItem('admin_token')) window.location.href = 'admin-dashboard.html';
 document.getElementById('frmAdmin').addEventListener('submit', function (e) {
   e.preventDefault();
   var btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
   API.call('loginAdmin', { username: document.getElementById('aUser').value.trim(), password: document.getElementById('aPass').value }).then(function (r) {
-    if (!r.ok) {
-      var eb = document.getElementById('aErr'); eb.textContent = r.msg || 'Login gagal.'; eb.style.display = 'block';
-      btn.disabled = false; return;
-    }
+    if (!r.ok) { var eb = document.getElementById('aErr'); eb.textContent = r.msg || 'Login gagal.'; eb.style.display = 'block'; btn.disabled = false; return; }
     sessionStorage.setItem('admin_token', r.data.token);
     sessionStorage.setItem('admin_user', r.data.user);
     window.location.href = 'admin-dashboard.html';

@@ -1,162 +1,86 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard — TRACER SMAGRISA</title>
-<link rel="icon" id="favicon">
-<link rel="stylesheet" href="css/style.css">
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="admin-shell">
-  <aside class="sidebar">
-    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
-    <nav class="sb-nav" id="navList"></nav>
-    <div class="sb-foot">
-      <div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
-      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button>
-    </div>
-  </aside>
-  <div class="main">
-    <header class="topbar"><h2>Dashboard</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
-    <main class="content">
-      <div class="card filter-bar">
-        <div class="field"><label>TAHUN TRACER</label><select class="select" id="fTahun"></select></div>
-        <div class="field"><label>TAHUN LULUS</label><select class="select" id="fTl"></select></div>
-        <div class="field"><label>STATUS</label><select class="select" id="fStatus"></select></div>
-        <button class="btn btn-outline btn-sm" id="btnReset"><i data-icon="refresh"></i> Reset</button>
-      </div>
-      <div id="dashBody"><div class="empty"><div class="spinner" style="margin:0 auto"></div></div></div>
-    </main>
-  </div>
-</div>
-
+<div id="adminRoot"></div>
 <div id="toasts" class="toast-wrap"></div>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-<script src="js/config.js"></script>
-<script src="js/icons.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/data-referensi.js"></script>
-<script src="js/mock-backend.js"></script>
-<script src="js/api.js"></script>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
 <script>
-if (!sessionStorage.getItem('admin_token')) window.location.href = 'admin.html';
-document.getElementById('tahunAktif').textContent = CONFIG.TAHUN_TRACER_AKTIF;
-document.getElementById('sbUser').textContent = sessionStorage.getItem('admin_user') || 'admin';
+if (initAdminShell('admin-dashboard.html', 'Dashboard')) {
+  var FILTER = { tahunTracer: '', tahunLulus: '', status: '' };
+  var colors = { 'Bekerja': '#1d4ed8', 'Kuliah': '#06b6d4', 'Bekerja + Kuliah': '#8b5cf6', 'Belum': '#94a3b8' };
+  var charts = [];
+  function destroyCharts(){ charts.forEach(function(c){ try{c.destroy();}catch(e){} }); charts = []; }
 
-var NAV = [
-  ['admin-dashboard', 'home', 'Dashboard'],
-  ['admin-alumni', 'users', 'Data Alumni'],
-  ['admin-tracer', 'file', 'Data Tracer'],
-  ['admin-statistik', 'bar', 'Statistik'],
-  ['admin-laporan', 'printer', 'Laporan'],
-  ['admin-import', 'upload', 'Import CSV'],
-  ['admin-referensi', 'db', 'Referensi'],
-  ['admin-pengaturan', 'gear', 'Pengaturan'],
-  ['admin-log', 'list', 'Log Aktivitas']
-];
-document.getElementById('navList').innerHTML = NAV.map(function (i) {
-  var cls = (i[0] === 'admin-dashboard') ? 'sb-item active' : 'sb-item';
-  return '<button class="' + cls + '" data-page="' + i[0] + '">' + icon(i[1]) + ' ' + i[2] + '</button>';
-}).join('');
-document.getElementById('navList').addEventListener('click', function (e) {
-  var b = e.target.closest('.sb-item'); if (!b) return;
-  var page = b.dataset.page;
-  if (page === 'admin-dashboard') { window.location.reload(); return; }
-  toast('Halaman ' + page + ' belum dibuat di versi lokal. Lanjutkan di Apps Script atau minta file konversinya.', 'info');
-});
-document.getElementById('btnLogout').onclick = function () {
-  sessionStorage.removeItem('admin_token'); sessionStorage.removeItem('admin_user');
-  window.location.href = 'admin.html';
-};
+  var content = document.getElementById('admContent');
+  content.innerHTML =
+    '<div class="card filter-bar">' +
+      '<div class="field"><label>TAHUN TRACER</label><select class="select" id="fTahun"></select></div>' +
+      '<div class="field"><label>TAHUN LULUS</label><select class="select" id="fTl"></select></div>' +
+      '<div class="field"><label>STATUS</label><select class="select" id="fStatus"></select></div>' +
+      '<button class="btn btn-outline btn-sm" id="btnReset">' + icon('refresh') + ' Reset</button>' +
+    '</div>' +
+    '<div id="dashBody"><div class="empty"><div class="spinner" style="margin:0 auto"></div></div></div>';
 
-var FILTER = { tahunTracer: '', tahunLulus: '', status: '' };
-var colors = { 'Bekerja': '#1d4ed8', 'Kuliah': '#06b6d4', 'Bekerja + Kuliah': '#8b5cf6', 'Belum': '#94a3b8' };
-var chartInstances = [];
-function destroyCharts(){ chartInstances.forEach(function(c){ try{c.destroy();}catch(e){} }); chartInstances = []; }
+  function renderDash() {
+    destroyCharts();
+    document.getElementById('dashBody').innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto"></div></div>';
+    Promise.all([
+      API.call('getDashboardStats', { filter: FILTER }),
+      API.call('getAlumniList')
+    ]).then(function (res) {
+      var r = res[0], r2 = res[1];
+      if (!r.ok || !r.data) { document.getElementById('dashBody').innerHTML = '<div class="empty">Gagal memuat.</div>'; return; }
+      var d = r.data, cd = d.cards;
+      var fT = document.getElementById('fTahun'), fTl = document.getElementById('fTl'), fS = document.getElementById('fStatus');
+      if (fT.options.length <= 1) fT.innerHTML = '<option value="">Semua</option>' + d.perTahun.labels.map(function (y) { return '<option>' + y + '</option>'; }).join('');
+      if (fTl.options.length <= 1 && r2.ok) {
+        var yset = {}; r2.data.forEach(function (a) { yset[a.tahun_lulus] = 1; });
+        fTl.innerHTML = '<option value="">Semua</option>' + Object.keys(yset).sort().map(function (y) { return '<option>' + y + '</option>'; }).join('');
+      }
+      if (fS.options.length <= 1) fS.innerHTML = '<option value="">Semua</option>' + CONFIG.STATUS_LIST.map(function (s) { return '<option>' + s + '</option>'; }).join('');
 
-function renderDash() {
-  destroyCharts();
-  document.getElementById('dashBody').innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto"></div></div>';
-  Promise.all([
-    API.call('getDashboardStats', { filter: FILTER }),
-    API.call('getAlumniList')
-  ]).then(function (res) {
-    var r = res[0], r2 = res[1];
-    if (!r.ok || !r.data) { document.getElementById('dashBody').innerHTML = '<div class="empty">Gagal memuat.</div>'; return; }
-    var d = r.data, cd = d.cards;
+      document.getElementById('dashBody').innerHTML =
+        '<div class="stat-grid">' +
+          '<div class="card stat-card"><div class="bub" style="background:var(--b100);color:var(--b800)">' + icon('users') + '</div><div><div class="v">' + cd.totalAlumni + '</div><div class="l">Total Alumni</div></div></div>' +
+          '<div class="card stat-card"><div class="bub" style="background:var(--green-bg);color:var(--green)">' + icon('checkc') + '</div><div><div class="v">' + cd.sudah + '</div><div class="l">Sudah Mengisi</div></div></div>' +
+          '<div class="card stat-card"><div class="bub" style="background:var(--amber-bg);color:var(--amber)">' + icon('clock') + '</div><div><div class="v">' + cd.belum + '</div><div class="l">Belum Mengisi</div></div></div>' +
+          '<div class="card stat-card"><div class="bub" style="background:var(--violet-bg);color:var(--violet)">' + icon('trend') + '</div><div><div class="v">' + cd.responseRate + '%</div><div class="l">Response Rate</div></div></div>' +
+        '</div>' +
+        '<div class="grid-2"><div class="card pad"><h3>' + icon('pie') + ' Distribusi Status</h3><div class="chart-box"><canvas id="chStatus"></canvas></div></div>' +
+        '<div class="card pad"><h3>' + icon('bar') + ' Status per Tahun</h3><div class="chart-box"><canvas id="chTahun"></canvas></div></div></div>' +
+        '<div class="grid-2"><div class="card pad"><h3>' + icon('briefcase') + ' Jenis Pekerjaan</h3><div class="chart-box"><canvas id="chJenis"></canvas></div></div>' +
+        '<div class="card pad"><h3>' + icon('layers') + ' Bidang Usaha</h3><div class="chart-box"><canvas id="chBidang"></canvas></div></div></div>' +
+        '<div class="grid-2"><div class="card pad"><h3>' + icon('bar') + ' Tingkat Penghasilan</h3><div class="chart-box"><canvas id="chPh"></canvas></div></div>' +
+        '<div class="card pad"><h3>' + icon('gradcap') + ' Perguruan Tinggi</h3><div class="chart-box"><canvas id="chPt"></canvas></div></div></div>' +
+        '<div class="card pad"><h3>' + icon('trend') + ' Tren Longitudinal</h3><div class="chart-box tall"><canvas id="chTren"></canvas></div></div>';
 
-    var fTahun = document.getElementById('fTahun'), fTl = document.getElementById('fTl'), fStatus = document.getElementById('fStatus');
-    if (fTahun.options.length <= 1) fTahun.innerHTML = '<option value="">Semua</option>' + d.perTahun.labels.map(function (y) { return '<option>' + y + '</option>'; }).join('');
-    if (fTl.options.length <= 1 && r2.ok) {
-      var yset = {}; r2.data.forEach(function (a) { yset[a.tahun_lulus] = 1; });
-      fTl.innerHTML = '<option value="">Semua</option>' + Object.keys(yset).sort().map(function (y) { return '<option>' + y + '</option>'; }).join('');
-    }
-    if (fStatus.options.length <= 1) fStatus.innerHTML = '<option value="">Semua</option>' + CONFIG.STATUS_LIST.map(function (s) { return '<option>' + s + '</option>'; }).join('');
-
-    document.getElementById('dashBody').innerHTML =
-      '<div class="stat-grid">' +
-        '<div class="card stat-card"><div class="bub" style="background:var(--b100);color:var(--b800)">' + icon('users') + '</div><div><div class="v">' + cd.totalAlumni + '</div><div class="l">Total Alumni</div></div></div>' +
-        '<div class="card stat-card"><div class="bub" style="background:var(--green-bg);color:var(--green)">' + icon('checkc') + '</div><div><div class="v">' + cd.sudah + '</div><div class="l">Sudah Mengisi</div></div></div>' +
-        '<div class="card stat-card"><div class="bub" style="background:var(--amber-bg);color:var(--amber)">' + icon('clock') + '</div><div><div class="v">' + cd.belum + '</div><div class="l">Belum Mengisi</div></div></div>' +
-        '<div class="card stat-card"><div class="bub" style="background:var(--violet-bg);color:var(--violet)">' + icon('trend') + '</div><div><div class="v">' + cd.responseRate + '%</div><div class="l">Response Rate</div></div></div>' +
-      '</div>' +
-      '<div class="grid-2"><div class="card pad"><h3>' + icon('pie') + ' Distribusi Status</h3><div class="chart-box"><canvas id="chStatus"></canvas></div></div>' +
-      '<div class="card pad"><h3>' + icon('bar') + ' Status per Tahun</h3><div class="chart-box"><canvas id="chTahun"></canvas></div></div></div>' +
-      '<div class="grid-2"><div class="card pad"><h3>' + icon('briefcase') + ' Jenis Pekerjaan</h3><div class="chart-box"><canvas id="chJenis"></canvas></div></div>' +
-      '<div class="card pad"><h3>' + icon('layers') + ' Bidang Usaha</h3><div class="chart-box"><canvas id="chBidang"></canvas></div></div></div>' +
-      '<div class="grid-2"><div class="card pad"><h3>' + icon('bar') + ' Tingkat Penghasilan</h3><div class="chart-box"><canvas id="chPh"></canvas></div></div>' +
-      '<div class="card pad"><h3>' + icon('gradcap') + ' Perguruan Tinggi</h3><div class="chart-box"><canvas id="chPt"></canvas></div></div></div>' +
-      '<div class="card pad"><h3>' + icon('trend') + ' Tren Longitudinal</h3><div class="chart-box tall"><canvas id="chTren"></canvas></div></div>';
-
-    Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif';
-    chartInstances.push(new Chart(document.getElementById('chStatus'), {
-      type: 'doughnut',
-      data: { labels: CONFIG.STATUS_LIST, datasets: [{ data: CONFIG.STATUS_LIST.map(function (s) { return d.statusDist[s] || 0; }), backgroundColor: CONFIG.STATUS_LIST.map(function (s) { return colors[s]; }), borderWidth: 3, borderColor: '#fff' }] },
-      options: { maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom' } } }
-    }));
-    chartInstances.push(new Chart(document.getElementById('chTahun'), {
-      type: 'bar',
-      data: { labels: d.perTahun.labels, datasets: CONFIG.STATUS_LIST.map(function (s) { return { label: s, data: d.perTahun.series[s], backgroundColor: colors[s], borderRadius: 6 }; }) },
-      options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-    }));
-    function hbar(id, items, color) {
-      if (!items.length) return;
-      chartInstances.push(new Chart(document.getElementById(id), {
-        type: 'bar',
-        data: { labels: items.slice(0, 8).map(function (x) { return x.label; }), datasets: [{ data: items.slice(0, 8).map(function (x) { return x.count; }), backgroundColor: color, borderRadius: 6 }] },
-        options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } } }
-      }));
-    }
-    hbar('chJenis', d.jenisPekerjaan, '#2563eb');
-    hbar('chBidang', d.bidangUsaha, '#0891b2');
-    chartInstances.push(new Chart(document.getElementById('chPh'), {
-      type: 'bar',
-      data: { labels: d.penghasilan.map(function (x) { return x.label; }), datasets: [{ data: d.penghasilan.map(function (x) { return x.count; }), backgroundColor: '#7c3aed', borderRadius: 6 }] },
-      options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    }));
-    chartInstances.push(new Chart(document.getElementById('chPt'), {
-      type: 'bar',
-      data: { labels: d.perguruanTinggi.slice(0, 6).map(function (x) { return x.label; }), datasets: [{ data: d.perguruanTinggi.slice(0, 6).map(function (x) { return x.count; }), backgroundColor: '#059669', borderRadius: 6 }] },
-      options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
-    }));
-    chartInstances.push(new Chart(document.getElementById('chTren'), {
-      type: 'line',
-      data: { labels: d.tren.labels, datasets: [{ label: 'Responden', data: d.tren.responden, borderColor: '#1e40af', backgroundColor: 'rgba(37,99,235,.12)', fill: true, tension: .35, borderWidth: 2.5 }].concat(CONFIG.STATUS_LIST.map(function (s) { return { label: s, data: d.tren.series[s], borderColor: colors[s], backgroundColor: 'transparent', tension: .35, borderWidth: 2 }; })) },
-      options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-    }));
-  });
-}
-document.getElementById('fTahun').onchange = function (e) { FILTER.tahunTracer = e.target.value; renderDash(); };
-document.getElementById('fTl').onchange = function (e) { FILTER.tahunLulus = e.target.value; renderDash(); };
-document.getElementById('fStatus').onchange = function (e) { FILTER.status = e.target.value; renderDash(); };
-document.getElementById('btnReset').onclick = function () {
-  FILTER = { tahunTracer: '', tahunLulus: '', status: '' };
-  document.getElementById('fTahun').value = ''; document.getElementById('fTl').value = ''; document.getElementById('fStatus').value = '';
+      Chart.defaults.font.family = '"Plus Jakarta Sans", system-ui, sans-serif';
+      charts.push(new Chart(document.getElementById('chStatus'), { type: 'doughnut', data: { labels: CONFIG.STATUS_LIST, datasets: [{ data: CONFIG.STATUS_LIST.map(function (s) { return d.statusDist[s] || 0; }), backgroundColor: CONFIG.STATUS_LIST.map(function (s) { return colors[s]; }), borderWidth: 3, borderColor: '#fff' }] }, options: { maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom' } } } }));
+      charts.push(new Chart(document.getElementById('chTahun'), { type: 'bar', data: { labels: d.perTahun.labels, datasets: CONFIG.STATUS_LIST.map(function (s) { return { label: s, data: d.perTahun.series[s], backgroundColor: colors[s], borderRadius: 6 }; }) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }));
+      function hbar(id, items, color) {
+        if (!items.length) return;
+        charts.push(new Chart(document.getElementById(id), { type: 'bar', data: { labels: items.slice(0, 8).map(function (x) { return x.label; }), datasets: [{ data: items.slice(0, 8).map(function (x) { return x.count; }), backgroundColor: color, borderRadius: 6 }] }, options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } } } }));
+      }
+      hbar('chJenis', d.jenisPekerjaan, '#2563eb');
+      hbar('chBidang', d.bidangUsaha, '#0891b2');
+      charts.push(new Chart(document.getElementById('chPh'), { type: 'bar', data: { labels: d.penghasilan.map(function (x) { return x.label; }), datasets: [{ data: d.penghasilan.map(function (x) { return x.count; }), backgroundColor: '#7c3aed', borderRadius: 6 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } }));
+      charts.push(new Chart(document.getElementById('chPt'), { type: 'bar', data: { labels: d.perguruanTinggi.slice(0, 6).map(function (x) { return x.label; }), datasets: [{ data: d.perguruanTinggi.slice(0, 6).map(function (x) { return x.count; }), backgroundColor: '#059669', borderRadius: 6 }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } }));
+      charts.push(new Chart(document.getElementById('chTren'), { type: 'line', data: { labels: d.tren.labels, datasets: [{ label: 'Responden', data: d.tren.responden, borderColor: '#1e40af', backgroundColor: 'rgba(37,99,235,.12)', fill: true, tension: .35, borderWidth: 2.5 }].concat(CONFIG.STATUS_LIST.map(function (s) { return { label: s, data: d.tren.series[s], borderColor: colors[s], backgroundColor: 'transparent', tension: .35, borderWidth: 2 }; })) }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }));
+    });
+  }
+  document.getElementById('fTahun').onchange = function (e) { FILTER.tahunTracer = e.target.value; renderDash(); };
+  document.getElementById('fTl').onchange = function (e) { FILTER.tahunLulus = e.target.value; renderDash(); };
+  document.getElementById('fStatus').onchange = function (e) { FILTER.status = e.target.value; renderDash(); };
+  document.getElementById('btnReset').onclick = function () { FILTER = { tahunTracer: '', tahunLulus: '', status: '' }; document.getElementById('fTahun').value = ''; document.getElementById('fTl').value = ''; document.getElementById('fStatus').value = ''; renderDash(); };
   renderDash();
-};
-renderDash();
+}
 </script>
 </body>
 </html>

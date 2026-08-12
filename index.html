@@ -1,117 +1,32 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TRACER SMAGRISA — Tracer Study SMAS PGRI 1 Banjarbaru</title>
-<meta name="description" content="Sistem Tracer Study Lulusan SMAS PGRI 1 Banjarbaru.">
-<link rel="icon" type="image/png" href="https://i.ibb.co.com/5xXYJdKC/favicon-32x32.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --b50:#eff6ff;--b100:#dbeafe;--b200:#bfdbfe;--b500:#3b82f6;--b600:#2563eb;--b700:#1d4ed8;--b800:#1e40af;--b900:#1e3a8a;
-  --ink:#0f172a;--s7:#334155;--s6:#475569;--s5:#64748b;--s4:#94a3b8;--s3:#cbd5e1;--line:#e2e8f0;--bg:#f4f7fb;--card:#fff;
-  --green:#059669;--green-bg:#ecfdf5;--sh:0 1px 2px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.06);
-}
-html{scroll-behavior:smooth}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55}
-img{max-width:100%;display:block}a{color:var(--b600);text-decoration:none}
-.container{max-width:1180px;margin:0 auto;padding:0 20px}
-.ic{width:18px;height:18px;flex:none}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.18s;text-decoration:none;white-space:nowrap}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--b600);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.3)}
-.btn-primary:hover{background:var(--b700)}
-.btn-outline{background:#fff;color:var(--s7);border:1.5px solid var(--s3)}
-.btn-outline:hover{border-color:var(--b500);color:var(--b700);background:var(--b50)}
-.btn-ghost{background:transparent;color:var(--s6)}
-.btn-ghost:hover{background:#eef2f7}
-.btn-lg{padding:14px 26px;font-size:15px;border-radius:12px}
-.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh)}
-.pad{padding:22px}
-.card h3{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
-.site-head{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.site-head .container{display:flex;align-items:center;gap:14px;height:68px}
-.brand{display:flex;align-items:center;gap:12px;margin-right:auto}
-.brand img{width:44px;height:44px;border-radius:50%;box-shadow:0 2px 8px rgba(30,64,175,.25)}
-.brand b{font-size:15px;font-weight:800;display:block;line-height:1.2}
-.brand small{color:var(--s5);font-size:11.5px;font-weight:600}
-.nav-links{display:flex;gap:4px}
-.nav-links a{padding:8px 12px;border-radius:8px;font-size:13.5px;font-weight:700;color:var(--s6)}
-.nav-links a:hover{background:var(--b50);color:var(--b700)}
-.hero{background:linear-gradient(180deg,var(--b50) 0%,#fff 100%);padding:64px 0 56px;position:relative;overflow:hidden}
-.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center;position:relative}
-.chip{display:inline-flex;align-items:center;gap:8px;background:var(--b100);color:var(--b800);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:800}
-.hero h1{font-size:clamp(30px,4.4vw,46px);font-weight:800;line-height:1.12;margin:18px 0 14px;letter-spacing:-.02em}
-.hero h1 .grad{color:var(--b700)}
-.hero p.lead{color:var(--s6);font-size:16px;max-width:520px;margin-bottom:26px}
-.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
-.hero-card{padding:24px;position:relative}
-.hero-card .float{position:absolute;top:-16px;right:18px;background:var(--b700);color:#fff;border-radius:999px;padding:6px 14px;font-size:11px;font-weight:800;box-shadow:0 6px 16px rgba(29,78,216,.35)}
-.rr-big{display:flex;align-items:baseline;gap:8px;margin:8px 0 4px}
-.rr-big b{font-size:42px;font-weight:800;color:var(--b700)}
-.pbar{height:9px;background:#e8eef6;border-radius:99px;overflow:hidden}
-.pbar>span{display:block;height:100%;background:linear-gradient(90deg,var(--b500),var(--b700));border-radius:99px}
-.mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.mini{background:var(--b50);border:1px solid var(--b100);border-radius:12px;padding:12px 14px}
-.mini b{font-size:20px;font-weight:800;color:var(--b800);display:block}
-.mini span{font-size:11.5px;color:var(--s6);font-weight:700}
-section.block{padding:64px 0}
-.sec-head{text-align:center;max-width:640px;margin:0 auto 40px}
-.sec-head .kicker{color:var(--b600);font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
-.sec-head h2{font-size:clamp(24px,3vw,32px);font-weight:800;margin:8px 0 10px}
-.sec-head p{color:var(--s6)}
-.two-col{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
-.check-list{list-style:none;display:grid;gap:12px}
-.check-list li{display:flex;gap:12px;align-items:flex-start;font-weight:600;color:var(--s7)}
-.check-list .ic{color:var(--green);width:19px;height:19px;margin-top:2px}
-.benefit-grid,.steps-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.benefit,.step-item{padding:22px;transition:.2s}
-.benefit:hover,.step-item:hover{transform:translateY(-4px)}
-.benefit h4,.step-item h4{font-size:14.5px;font-weight:800;margin-bottom:6px}
-.benefit p,.step-item p{font-size:13px;color:var(--s6)}
-.step-item .num{width:38px;height:38px;border-radius:50%;background:var(--b600);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:14px;box-shadow:0 5px 14px rgba(37,99,235,.35)}
-.cta-band{background:linear-gradient(120deg,var(--b800),var(--b600));border-radius:22px;color:#fff;padding:44px 40px;display:flex;align-items:center;gap:28px;justify-content:space-between;flex-wrap:wrap;box-shadow:0 20px 44px rgba(30,64,175,.35)}
-footer.site-foot{border-top:1px solid var(--line);background:#fff;padding:34px 0;margin-top:20px}
-.foot{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;color:var(--s5);font-size:13px}
-.empty{padding:30px 20px;text-align:center;color:var(--s5)}
-.empty b{display:block;color:var(--s6);margin-bottom:4px}
-.spinner{width:26px;height:26px;border:3px solid var(--b100);border-top-color:var(--b600);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media (max-width:960px){
-  .hero-grid,.two-col{grid-template-columns:1fr}
-  .benefit-grid,.steps-row{grid-template-columns:1fr 1fr}
-  .nav-links{display:none}
-}
-@media (max-width:560px){.benefit-grid,.steps-row{grid-template-columns:1fr}}
-</style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRACER SMAGRISA — Beranda</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="site-head"><div class="container">
-  <div class="brand"><img id="brandLogo" src="" alt=""><div><b>TRACER SMAGRISA</b><small id="brandSchool"></small></div></div>
+  <div class="brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small data-cfg="SEKOLAH"></small></div></div>
   <nav class="nav-links"><a href="#tentang">Tentang</a><a href="#manfaat">Manfaat</a><a href="#panduan">Panduan</a></nav>
-  <a class="btn btn-ghost btn-sm" id="linkAdmin"><span data-ic="lock"></span> Admin</a>
-  <a class="btn btn-primary btn-sm" id="linkIsi"><span data-ic="send"></span> Isi Tracer</a>
+  <a class="btn btn-ghost btn-sm" href="admin.html"><i data-icon="lock"></i> Admin</a>
+  <a class="btn btn-primary btn-sm" href="login.html"><i data-icon="send"></i> Isi Tracer</a>
 </div></header>
 
 <section class="hero"><div class="container hero-grid">
   <div>
-    <span class="chip"><span data-ic="trend"></span> Tracer Study Tahun <span id="tahunHero"></span></span>
+    <span class="chip"><i data-icon="trend"></i> Tracer Study Tahun <span id="tahunHero"></span></span>
     <h1>Jejak Langkah Alumni, <span class="grad">Bangun Data Sekolah.</span></h1>
-    <p class="lead">Sistem tracer study lulusan <span id="sekolahLead"></span>. Verifikasi dengan NISN & tanggal lahir, isi status terkini, dan bantu sekolah membangun data lulusan dari waktu ke waktu.</p>
+    <p class="lead">Sistem tracer study lulusan <span data-cfg="SEKOLAH"></span>. Verifikasi dengan NISN & tanggal lahir, isi status terkini, dan bantu sekolah membangun data lulusan dari waktu ke waktu.</p>
     <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" id="ctaIsi"><span data-ic="send"></span> ISI TRACER STUDY</a>
+      <a class="btn btn-primary btn-lg" href="login.html"><i data-icon="send"></i> ISI TRACER STUDY</a>
       <a class="btn btn-outline btn-lg" href="#panduan">Lihat Panduan</a>
     </div>
   </div>
   <div class="hero-card card">
     <span class="float">Statistik Publik <span id="tahunCard"></span></span>
-    <h3><span data-ic="pie"></span> Partisipasi Alumni</h3>
-    <div id="pubStats" style="margin-top:12px"><div class="spinner"></div></div>
+    <h3><i data-icon="pie"></i> Partisipasi Alumni</h3>
+    <div id="pubStats" style="margin-top:12px"><div class="empty">Memuat statistik…</div></div>
   </div>
 </div></section>
 
@@ -120,16 +35,16 @@ footer.site-foot{border-top:1px solid var(--line);background:#fff;padding:34px 0
     <span class="chip">Tentang</span>
     <h2 style="font-size:clamp(24px,3vw,32px);font-weight:800;margin:14px 0 12px">Apa itu Tracer Study?</h2>
     <p style="color:var(--s6);margin-bottom:12px">Tracer study adalah penelusuran jejak lulusan untuk mengetahui status alumni: bekerja, melanjutkan kuliah, keduanya, atau masih mencari aktivitas.</p>
-    <p style="color:var(--s6)">TRACER SMAGRISA dirancang <b>longitudinal</b>: satu alumni dapat mengisi survei pada tahun survei yang berbeda, sehingga perubahan status dapat dianalisis dari waktu ke waktu.</p>
+    <p style="color:var(--s6)">TRACER SMAGRISA dirancang <b>longitudinal</b>: satu alumni dapat mengisi survei pada tahun survei yang berbeda.</p>
   </div>
   <div class="card pad">
-    <h3><span data-ic="checkc"></span> Tujuan Tracer Study</h3>
+    <h3><i data-icon="checkc"></i> Tujuan Tracer Study</h3>
     <ul class="check-list" style="margin-top:14px">
-      <li><span data-ic="check"></span> Memetakan status lulusan.</li>
-      <li><span data-ic="check"></span> Mengumpulkan data pekerjaan, bidang usaha, dan penghasilan.</li>
-      <li><span data-ic="check"></span> Menghimpun data perguruan tinggi & prodi tujuan.</li>
-      <li><span data-ic="check"></span> Menyediakan statistik dan laporan bagi sekolah.</li>
-      <li><span data-ic="check"></span> Fondasi tracer lintas tahun (longitudinal).</li>
+      <li><i data-icon="check"></i> Memetakan status lulusan.</li>
+      <li><i data-icon="check"></i> Mengumpulkan data pekerjaan, bidang usaha, dan penghasilan.</li>
+      <li><i data-icon="check"></i> Menghimpun data perguruan tinggi & prodi tujuan.</li>
+      <li><i data-icon="check"></i> Menyediakan statistik dan laporan bagi sekolah.</li>
+      <li><i data-icon="check"></i> Fondasi tracer lintas tahun (longitudinal).</li>
     </ul>
   </div>
 </div></section>
@@ -156,87 +71,40 @@ footer.site-foot{border-top:1px solid var(--line);background:#fff;padding:34px 0
 
 <section class="block"><div class="container">
   <div class="cta-band">
-    <div><h3>Sudah lulus? Kabarkan kabarmu! 🎓</h3><p>Isi tracer study <span id="tahunCta"></span> dan jadi bagian dari data lulusan.</p></div>
-    <a class="btn btn-lg" style="background:#fff;color:var(--b800)" id="ctaIsi2"><span data-ic="send"></span> ISI TRACER STUDY</a>
+    <div><h3>Sudah lulus? Kabarkan kabarmu! 🎓</h3><p>Isi tracer study <span id="tahunCta"></span>.</p></div>
+    <a class="btn btn-lg" style="background:#fff;color:var(--b800)" href="login.html"><i data-icon="send"></i> ISI TRACER STUDY</a>
   </div>
 </div></section>
 
 <footer class="site-foot"><div class="container foot">
-  <div class="brand" style="margin:0"><img id="footLogo" src="" style="width:38px;height:38px;border-radius:50%"><div><b style="font-size:13px">TRACER SMAGRISA</b><small id="footAlamat"></small></div></div>
-  <span>© <span id="yearNow"></span> <span id="footSchool"></span></span>
+  <div class="brand" style="margin:0"><img data-logo src="" style="width:38px;height:38px;border-radius:50%"><div><b style="font-size:13px" data-cfg="NAMA_APLIKASI"></b><small data-cfg="ALAMAT"></small></div></div>
+  <span>© <span id="yearNow"></span> <span data-cfg="SEKOLAH"></span></span>
 </div></footer>
 
+<div id="toasts" class="toast-wrap"></div>
+<div id="loading" class="loading-overlay" style="display:none"><div class="loading-card"><div class="spinner"></div><div>Memproses…</div></div></div>
+
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script>
 <script>
-/* ============================================================
-   KONFIGURASI GITHUB PAGES
-   >>> GANTI GAS_WEB_APP_URL dengan URL deploy Apps Script Anda <<<
-   ============================================================ */
-const GH = {
-  GAS_WEB_APP_URL : 'https://script.google.com/macros/s/AKfycbwQQWQDZqqdyhJ6UXRyjri85X6dpVIH2cg6vY2c7ZY1-YnUJxPPbOYWLEP-wKaF0TX6gw/exec',
-  SEKOLAH         : 'SMAS PGRI 1 Banjarbaru',
-  ALAMAT          : 'Jl. Al-Jafri No. 43, RT 11 RW 03, Kemuning, Banjarbaru Selatan, Kota Banjarbaru, Kalimantan Selatan',
-  TAHUN           : 2026,
-  LOGO_URL        : 'https://i.ibb.co.com/k2fyqpXz/android-chrome-512x512.png'
-};
-
-const ICONS = {
-  trend:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
-  send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
-  lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  pie:'<path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
-  checkc:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
-  check:'<polyline points="20 6 9 17 4 12"/>'
-};
-function ic(n){ return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[n]||'')+'</svg>'; }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];}); }
-
-(function(){
-  // isi teks & link dari konfigurasi
-  var loginUrl = GH.GAS_WEB_APP_URL + '?page=login';
-  var adminUrl = GH.GAS_WEB_APP_URL + '?page=admin';
-  document.getElementById('brandSchool').textContent = GH.SEKOLAH;
-  document.getElementById('sekolahLead').textContent = GH.SEKOLAH;
-  document.getElementById('footSchool').textContent = GH.SEKOLAH;
-  document.getElementById('footAlamat').textContent = GH.ALAMAT;
-  document.getElementById('tahunHero').textContent = GH.TAHUN;
-  document.getElementById('tahunCard').textContent = GH.TAHUN;
-  document.getElementById('tahunCta').textContent = GH.TAHUN;
-  document.getElementById('yearNow').textContent = new Date().getFullYear();
-  document.getElementById('brandLogo').src = GH.LOGO_URL;
-  document.getElementById('footLogo').src = GH.LOGO_URL;
-  document.getElementById('linkAdmin').href = adminUrl;
-  document.getElementById('linkIsi').href = loginUrl;
-  document.getElementById('ctaIsi').href = loginUrl;
-  document.getElementById('ctaIsi2').href = loginUrl;
-  // inject ikon
-  document.querySelectorAll('[data-ic]').forEach(function(el){ el.innerHTML = ic(el.getAttribute('data-ic')); });
-
-  // statistik publik (fetch ke Apps Script, fallback jika gagal/CORS)
+document.getElementById('tahunHero').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('tahunCard').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('tahunCta').textContent = CONFIG.TAHUN_TRACER_AKTIF;
+document.getElementById('yearNow').textContent = new Date().getFullYear();
+API.call('getDashboardStats', { filter: { tahunTracer: CONFIG.TAHUN_TRACER_AKTIF } }).then(function (r) {
   var el = document.getElementById('pubStats');
-  var ctrl = ('AbortController' in window) ? new AbortController() : null;
-  var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, 8000) : null;
-  var url = GH.GAS_WEB_APP_URL + '?action=getDashboardStats&payload=' + encodeURIComponent(JSON.stringify({filter:{tahunTracer:GH.TAHUN}}));
-  fetch(url, ctrl ? {signal:ctrl.signal} : {})
-    .then(function(r){ return r.json(); })
-    .then(function(r){
-      if(timer) clearTimeout(timer);
-      if(!r || !r.ok || !r.data){ throw new Error('bad'); }
-      var d = r.data;
-      el.innerHTML =
-        '<div class="rr-big"><b>'+d.cards.responseRate+'%</b><span style="color:var(--s5);font-weight:700;font-size:13px">response rate</span></div>'+
-        '<div class="pbar"><span style="width:'+d.cards.responseRate+'%"></span></div>'+
-        '<div class="mini-grid">'+
-          '<div class="mini"><b>'+d.cards.totalAlumni+'</b><span>Total Alumni</span></div>'+
-          '<div class="mini"><b>'+d.cards.sudah+'</b><span>Sudah Mengisi</span></div>'+
-          '<div class="mini"><b>'+(d.statusDist['Bekerja']||0)+'</b><span>Bekerja</span></div>'+
-          '<div class="mini"><b>'+(d.statusDist['Kuliah']||0)+'</b><span>Kuliah</span></div>'+
-        '</div>';
-    })
-    .catch(function(){
-      if(timer) clearTimeout(timer);
-      el.innerHTML = '<div class="empty"><b>Statistik belum tersedia.</b>Data akan tampil setelah sistem tracer aktif.<br><a href="'+loginUrl+'" style="font-weight:700">Isi Tracer Study →</a></div>';
-    });
-})();
+  if (!r || !r.ok || !r.data) { el.innerHTML = '<div class="empty">Statistik belum tersedia.</div>'; return; }
+  var d = r.data;
+  el.innerHTML =
+    '<div class="rr-big"><b>' + d.cards.responseRate + '%</b><span style="color:var(--s5);font-weight:700;font-size:13px">response rate</span></div>' +
+    '<div class="pbar"><span style="width:' + d.cards.responseRate + '%"></span></div>' +
+    '<div class="mini-grid">' +
+      '<div class="mini"><b>' + d.cards.totalAlumni + '</b><span>Total Alumni</span></div>' +
+      '<div class="mini"><b>' + d.cards.sudah + '</b><span>Sudah Mengisi</span></div>' +
+      '<div class="mini"><b>' + (d.statusDist['Bekerja'] || 0) + '</b><span>Bekerja</span></div>' +
+      '<div class="mini"><b>' + (d.statusDist['Kuliah'] || 0) + '</b><span>Kuliah</span></div>' +
+    '</div>';
+});
 </script>
 </body>
 </html>

@@ -1,8 +1,4 @@
-/**
- * Lapisan API tunggal.
- * - mode 'mock' : pakai MockBackend (offline, untuk localhost).
- * - mode 'gas'  : panggil Web App Apps Script (produksi).
- */
+// mock → MockBackend (offline). gas → fetch ke Apps Script.
 const API = {
   call: function (action, payload, token) {
     if (CONFIG.API_MODE === 'mock') {
@@ -12,7 +8,7 @@ const API = {
     params.set('action', action);
     if (payload !== undefined) params.set('payload', JSON.stringify(payload));
     if (token) params.set('token', token);
-    return fetch(CONFIG.GAS_WEB_APP_URL + '?' + params.toString(), { credentials: 'include' })
+    return fetch(CONFIG.GAS_WEB_APP_URL + '?' + params.toString())
       .then(function (r) { return r.json(); })
       .catch(function (e) { return { ok: false, msg: 'Kesalahan jaringan: ' + e.message }; });
   }

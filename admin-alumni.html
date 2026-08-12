@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Alumni — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
+    <nav class="sb-nav" id="navList"></nav>
+    <div class="sb-foot"><div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
+      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button></div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h2>Data Alumni</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
+    <main class="content">
+      <div class="toolbar">
+        <input class="input" id="searchQ" placeholder="Cari nama / NISN" style="max-width:320px">
+        <a class="btn btn-primary btn-sm" href="admin-import.html"><i data-icon="upload"></i> Import CSV</a>
+      </div>
+      <div id="almBody"><div class="empty"><div class="spinner" style="margin:0 auto"></div></div></div>
+    </main>
+  </div>
+</div>
+<div id="toasts" class="toast-wrap"></div>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
+<script>
+initAdminShell('admin-alumni.html');
+var alumniList = [];
+function render() {
+  var q = document.getElementById('searchQ').value.toLowerCase();
+  var rows = alumniList.filter(function (a) { return !q || a.nama.toLowerCase().indexOf(q) >= 0 || String(a.nisn).indexOf(q) >= 0; });
+  var el = document.getElementById('almBody');
+  if (!rows.length) { el.innerHTML = '<div class="card empty">' + icon('users') + '<b>Tidak ada alumni ditemukan.</b>Import CSV atau ubah kata kunci.</div>'; return; }
+  el.innerHTML = '<div class="table-wrap card"><table class="tbl"><thead><tr><th>Alumni</th><th>NISN</th><th>JK</th><th>Th. Lulus</th><th>No. HP</th><th>Pengisian</th></tr></thead><tbody>' +
+    rows.map(function (a) {
+      return '<tr><td><b>' + esc(a.nama) + '</b><br><small style="color:var(--s4)">' + a.alumni_id + '</small></td>' +
+        '<td style="font-family:monospace">' + esc(a.nisn) + '</td><td>' + (a.jenis_kelamin === 'Laki-laki' ? 'L' : 'P') + '</td><td>' + a.tahun_lulus + '</td><td>' + esc(a.no_hp || '-') + '</td>' +
+        '<td>' + (a.tracerCount ? '<span class="badge badge-green">' + a.tracerCount + 'x (' + a.years.join(', ') + ')</span>' : '<span class="badge badge-amber">Belum mengisi</span>') + '</td></tr>';
+    }).join('') + '</tbody></table></div>' +
+    '<p style="font-size:12px;color:var(--s5);margin-top:8px">' + rows.length + ' alumni ditampilkan.</p>';
+}
+document.getElementById('searchQ').addEventListener('input', render);
+API.call('getAlumniList').then(function (r) {
+  if (r.ok) { alumniList = r.data; render(); }
+  else { document.getElementById('almBody').innerHTML = '<div class="card empty">Gagal memuat data.</div>'; }
+});
+</script>
+</body>
+</html>

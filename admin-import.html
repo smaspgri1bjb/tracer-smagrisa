@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Import CSV — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
+    <nav class="sb-nav" id="navList"></nav>
+    <div class="sb-foot"><div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
+      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button></div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h2>Import CSV Alumni</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
+    <main class="content">
+      <div class="card pad" style="margin-bottom:16px">
+        <h3 style="margin-bottom:14px"><i data-icon="upload"></i> Unggah CSV</h3>
+        <div class="dropzone" id="dz">
+          <i data-icon="upload"></i>
+          <b style="display:block;margin-bottom:4px">Klik atau letakkan file CSV di sini</b>
+          <span style="font-size:12.5px;color:var(--s5)">Kolom: Nama, JK, NISN, Tempat Lahir, Tanggal Lahir, NIK, HP, Tahun Lulus</span>
+        </div>
+        <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+        <div style="margin-top:12px"><button class="btn btn-outline btn-sm" id="btnTpl"><i data-icon="download"></i> Unduh Template CSV</button></div>
+      </div>
+      <div id="impPrev"></div>
+    </main>
+  </div>
+</div>
+<div id="toasts" class="toast-wrap"></div>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
+<script>
+initAdminShell('admin-import.html');
+var IMP = null;
+document.getElementById('dz').onclick = function () { document.getElementById('csvFile').click(); };
+document.getElementById('dz').addEventListener('dragover', function (e) { e.preventDefault(); });
+document.getElementById('dz').addEventListener('drop', function (e) { e.preventDefault(); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+document.getElementById('csvFile').addEventListener('change', function (e) { if (e.target.files[0]) handleFile(e.target.files[0]); e.target.value = ''; });
+
+function handleFile(file) {
+  document.getElementById('impPrev').innerHTML = '<div class="empty"><div class="spinner" style="margin:0 auto"></div> Memvalidasi…</div>';
+  file.text().then(function (text) {
+    return API.call('previewImportCSV', { text: text });
+  }).then(function (r) {
+    if (!r.ok) { document.getElementById('impPrev').innerHTML = '<div class="card empty">Gagal memvalidasi: ' + esc(r.msg) + '</div>'; return; }
+    IMP = { rows: r.data.baris, ringkasan: r.data.ringkasan, name: file.name };
+    var s = IMP.ringkasan;
+    document.getElementById('impPrev').innerHTML =
+      '<div class="card pad"><h3>' + icon('file') + ' Preview Import — ' + esc(file.name) + '</h3>' +
+      '<div class="sumchips">' +
+        '<span class="badge badge-blue">Total: ' + s.total + '</span>' +
+        '<span class="badge badge-green">Valid: ' + s.valid + '</span>' +
+        '<span class="badge badge-amber">Duplikat: ' + s.duplikat + '</span>' +
+        '<span class="badge badge-red">Error: ' + s.error + '</span>' +
+      '</div>' +
+      '<div class="table-wrap" style="max-height:380px"><table class="tbl"><thead><tr><th>Baris</th><th>Nama</th><th>NISN</th><th>JK</th><th>Tgl Lahir</th><th>Th. Lulus</th><th>Status</th></tr></thead><tbody>' +
+      IMP.rows.slice(0, 100).map(function (b) {
+        var st = b.status === 'valid' ? '<span class="badge badge-green">Valid</span>' : b.status === 'duplikat' ? '<span class="badge badge-amber">Duplikat</span>' : '<span class="badge badge-red">Error</span>';
+        return '<tr><td>' + b.no + '</td><td>' + esc(b.nama) + '</td><td style="font-family:monospace">' + esc(b.nisn) + '</td><td>' + esc(b.jk) + '</td><td>' + esc(b.tgl) + '</td><td>' + esc(b.tahun) + '</td><td>' + st + (b.alasan.length ? '<br><small style="color:var(--red)">' + esc(b.alasan.join(', ')) + '</small>' : '') + '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>' +
+      '<div class="form-nav"><button class="btn btn-ghost" id="btnCancel">Batal</button><button class="btn btn-primary" id="btnCommit" ' + (s.valid ? '' : 'disabled') + '>' + icon('checkc') + ' Import ' + s.valid + ' Data Valid</button></div></div>';
+    document.getElementById('btnCancel').onclick = function () { IMP = null; document.getElementById('impPrev').innerHTML = ''; };
+    document.getElementById('btnCommit').onclick = function () {
+      if (!IMP) return;
+      if (!confirm('Import ' + IMP.ringkasan.valid + ' data valid?')) return;
+      var validRows = IMP.rows.filter(function (r) { return r.status === 'valid'; });
+      API.call('importAlumniCSV', { rowsValid: validRows }).then(function (r2) {
+        if (r2.ok) {
+          toast('Berhasil import ' + r2.data.count + ' alumni.');
+          IMP = null;
+          document.getElementById('impPrev').innerHTML = '<div class="card pad" style="text-align:center"><b style="color:var(--green)">✓ Import berhasil</b><br><a href="admin-alumni.html" style="font-weight:700">Lihat Data Alumni →</a></div>';
+        } else { toast('Gagal import.', 'error'); }
+      });
+    };
+  });
+}
+document.getElementById('btnTpl').onclick = function () {
+  var csv = 'Nama,JK,NISN,Tempat Lahir,Tanggal Lahir,NIK,HP,Tahun Lulus\nContoh Siswa,L,0099887766,Banjarbaru,2008-08-15,6372011508080901,081200009900,2026';
+  var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'template_alumni.csv'; a.click();
+};
+</script>
+</body>
+</html>

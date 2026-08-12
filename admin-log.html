@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Log Aktivitas — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
+    <nav class="sb-nav" id="navList"></nav>
+    <div class="sb-foot"><div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
+      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button></div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h2>Log Aktivitas</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
+    <main class="content">
+      <div class="toolbar"><input class="input" id="searchQ" placeholder="Cari log…" style="max-width:320px"></div>
+      <div id="logBody"><div class="empty"><div class="spinner" style="margin:0 auto"></div></div></div>
+    </main>
+  </div>
+</div>
+<div id="toasts" class="toast-wrap"></div>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
+<script>
+initAdminShell('admin-log.html');
+var logs = [];
+function render() {
+  var q = document.getElementById('searchQ').value.toLowerCase();
+  var rows = logs.filter(function (l) { return !q || (l.aksi + l.detail + l.aktor).toLowerCase().indexOf(q) >= 0; });
+  var el = document.getElementById('logBody');
+  if (!rows.length) { el.innerHTML = '<div class="card empty">' + icon('list') + '<b>Belum ada log.</b></div>'; return; }
+  el.innerHTML = '<div class="table-wrap card"><table class="tbl"><thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>' +
+    rows.map(function (l) {
+      var d = l.waktu ? new Date(l.waktu) : null;
+      var t = (d && !isNaN(d)) ? d.toLocaleString('id-ID') : l.waktu;
+      return '<tr><td style="white-space:nowrap">' + esc(t) + '</td><td><span class="badge badge-slate">' + esc(l.aktor) + '</span></td><td><b>' + esc(l.aksi) + '</b></td><td>' + esc(l.detail) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+}
+document.getElementById('searchQ').addEventListener('input', render);
+API.call('getLog').then(function (r) { if (r.ok) { logs = r.data; render(); } });
+</script>
+</body>
+</html>

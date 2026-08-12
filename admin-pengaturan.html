@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pengaturan — TRACER SMAGRISA</title>
+<link rel="icon" id="favicon"><link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="admin-shell">
+  <aside class="sidebar">
+    <div class="sb-brand"><img data-logo src="" alt=""><div><b data-cfg="NAMA_APLIKASI"></b><small>Admin Panel</small></div></div>
+    <nav class="sb-nav" id="navList"></nav>
+    <div class="sb-foot"><div class="sb-user"><div class="av">A</div><div><b id="sbUser">admin</b><small>Administrator</small></div></div>
+      <button class="btn btn-sm" style="width:100%;background:rgba(255,255,255,.12);color:#fff" id="btnLogout"><i data-icon="logout"></i> Keluar</button></div>
+  </aside>
+  <div class="main">
+    <header class="topbar"><h2>Pengaturan</h2><div class="right"><span class="chip"><i data-icon="clock"></i> Tahun Tracer <span id="tahunAktif"></span></span></div></header>
+    <main class="content">
+      <div class="grid-2">
+        <div class="card pad">
+          <h3 style="margin-bottom:14px"><i data-icon="gear"></i> Identitas Sekolah & Tahun Tracer</h3>
+          <div class="field"><label>Nama Sekolah</label><input class="input" id="setNama"></div>
+          <div class="field"><label>Alamat</label><input class="input" id="setAlamat"></div>
+          <div class="ro-grid">
+            <div class="field"><label>Telepon</label><input class="input" id="setTelp"></div>
+            <div class="field"><label>Email</label><input class="input" id="setEmail"></div>
+          </div>
+          <div class="field"><label>Tahun Tracer Aktif</label><input class="input" type="number" id="setTahun" min="2020" max="2100"></div>
+          <button class="btn btn-primary" id="btnSave"><i data-icon="checkc"></i> Simpan Pengaturan</button>
+        </div>
+        <div class="card pad">
+          <h3 style="margin-bottom:14px"><i data-icon="lock"></i> Ganti Password Admin</h3>
+          <div class="field"><label>Password Lama</label><input class="input" type="password" id="pwLama"></div>
+          <div class="field"><label>Password Baru (min. 8 karakter)</label><input class="input" type="password" id="pwBaru"></div>
+          <div class="field"><label>Ulangi Password Baru</label><input class="input" type="password" id="pwUlang"></div>
+          <button class="btn btn-primary" id="btnPw"><i data-icon="lock"></i> Ganti Password</button>
+          <p style="font-size:11.5px;color:var(--s5);margin-top:10px">Di produksi, password disimpan sebagai hash (bukan plaintext).</p>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="toasts" class="toast-wrap"></div>
+<script src="js/config.js"></script><script src="js/icons.js"></script><script src="js/utils.js"></script>
+<script src="js/data-referensi.js"></script><script src="js/mock-backend.js"></script><script src="js/api.js"></script><script src="js/admin-nav.js"></script>
+<script>
+initAdminShell('admin-pengaturan.html');
+API.call('getPengaturan').then(function (r) {
+  if (r.ok) {
+    document.getElementById('setNama').value = r.data.nama_sekolah || '';
+    document.getElementById('setAlamat').value = r.data.alamat || '';
+    document.getElementById('setTelp').value = r.data.telepon || '';
+    document.getElementById('setEmail').value = r.data.email || '';
+    document.getElementById('setTahun').value = r.data.tahun_tracer_aktif || new Date().getFullYear();
+  }
+});
+document.getElementById('btnSave').onclick = function () {
+  var p = {
+    nama_sekolah: document.getElementById('setNama').value.trim(),
+    alamat: document.getElementById('setAlamat').value.trim(),
+    telepon: document.getElementById('setTelp').value.trim(),
+    email: document.getElementById('setEmail').value.trim(),
+    tahun_tracer_aktif: parseInt(document.getElementById('setTahun').value, 10) || new Date().getFullYear()
+  };
+  if (!p.nama_sekolah) { toast('Nama sekolah wajib diisi.', 'warn'); return; }
+  API.call('savePengaturan', { p: p }).then(function (r) {
+    if (r.ok) { toast('Pengaturan disimpan.'); document.getElementById('tahunAktif').textContent = p.tahun_tracer_aktif; }
+    else toast('Gagal menyimpan.', 'error');
+  });
+};
+document.getElementById('btnPw').onclick = function () {
+  var baru = document.getElementById('pwBaru').value;
+  if (baru !== document.getElementById('pwUlang').value) { toast('Konfirmasi tidak sama.', 'warn'); return; }
+  API.call('changeAdminPassword', { lama: document.getElementById('pwLama').value, baru: baru }).then(function (r) {
+    if (r.ok) { toast('Password diganti.'); document.getElementById('pwLama').value = document.getElementById('pwBaru').value = document.getElementById('pwUlang').value = ''; }
+    else toast(r.msg || 'Gagal.', 'error');
+  });
+};
+</script>
+</body>
+</html>
